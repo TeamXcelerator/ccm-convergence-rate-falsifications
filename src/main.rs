@@ -672,13 +672,21 @@ fn cmd_mellin_compare(
         let t_max_hp = rug::Float::with_val(prec, t_max);
         let bisect_iter: usize = 60;
 
+        // Pre-fetch GL nodes once before the parallel scans to avoid a
+        // cache-write race: if multiple rayon threads all call
+        // gauss_legendre_nodes concurrently on a cache miss, they race to
+        // write the same file and corrupt it.
+        eprintln!("[scan] Pre-fetching GL nodes ({} points, prec={} bits)...", n_quad, prec);
+        let (gl_nodes, gl_weights) = xc_numerics::quadrature::gauss_legendre_nodes(
+            n_quad, prec, xc_numerics::quadrature::CacheMode::default());
+
         // Toolkit's HP scan: parallel evaluation in HP, sequential
         // bisection in HP, sign tests via xc_numerics::fmt::sign_of.
         // No f64 round-trip on the scan or the bisection.
         eprintln!("[scan] Scanning {} grid points for Λ_λ in parallel...", n_scan + 1);
         let l_scan_start = std::time::Instant::now();
         let l_zeros_hp = mellin::scan_critical_line_zeros_hp(
-            &|_sigma, t| mellin::truncated_lambda_hp(&_sigma.clone(), t, &lambda_hp, n_quad),
+            &|_sigma, t| mellin::truncated_lambda_hp(&_sigma.clone(), t, &lambda_hp, &gl_nodes, &gl_weights),
             &t_min_hp, &t_max_hp, n_scan, bisect_iter,
         );
         eprintln!("[scan] Λ_λ scan done in {:.1}s, found {} zeros.",
@@ -687,7 +695,7 @@ fn cmd_mellin_compare(
         eprintln!("[scan] Scanning {} grid points for G(s) in parallel...", n_scan + 1);
         let g_scan_start = std::time::Instant::now();
         let g_zeros_hp = mellin::scan_critical_line_zeros_hp(
-            &|_sigma, t| mellin::xi_weighted_mellin_hp(&_sigma.clone(), t, &lambda_hp, xi_hp, n_modes, n_quad),
+            &|_sigma, t| mellin::xi_weighted_mellin_hp(&_sigma.clone(), t, &lambda_hp, xi_hp, n_modes, &gl_nodes, &gl_weights),
             &t_min_hp, &t_max_hp, n_scan, bisect_iter,
         );
         eprintln!("[scan] G(s) scan done in {:.1}s, found {} zeros.",
