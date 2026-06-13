@@ -19,21 +19,21 @@ echo "=== Claim 1: CCM Lemma 7.2 sweep at HP-${PREC} ==="
 echo "Conjecture: rel L∞ error × λ² ≈ const"
 echo
 
-# config = "lambda:n_modes:n_grid"
-#   λ²=13   → λ=√13,   N=120
-#   λ²=100  → λ=10,    N=500
-#   λ²=1000 → λ=√1000, N=800
+# config = "lambda_sq:n_modes:n_grid"
+#   λ²=13   → N=120
+#   λ²=100  → N=500
+#   λ²=1000 → N=800
 for cfg in \
-  "3.6055512754639896:120:4001" \
-  "10.0:500:8001" \
-  "31.622776601683793:800:8001"; do
-  lambda=${cfg%%:*}
+  "13:120:4001" \
+  "100:500:8001" \
+  "1000:800:8001"; do
+  lambda_sq=${cfg%%:*}
   rest=${cfg#*:}
   n_modes=${rest%%:*}
   n_grid=${rest##*:}
-  echo "--- λ=${lambda} (N=${n_modes}, N_grid=${n_grid}) ---"
+  echo "--- λ²=${lambda_sq} (N=${n_modes}, N_grid=${n_grid}) ---"
   "$BIN" prolate-compare \
-    --lambda "$lambda" --n-modes "$n_modes" \
+    --lambda-sq "$lambda_sq" --n-modes "$n_modes" \
     --precision-digits "$PREC" --n-grid "$n_grid"
   echo
 done

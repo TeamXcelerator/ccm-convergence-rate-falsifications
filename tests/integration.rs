@@ -68,8 +68,9 @@ fn reference_zeros_load_hp_1000() {
 /// construction; no f64 in the math path.
 #[test]
 fn sliwinski_regime_params() {
-    let params = CcmParams::from_lambda(50.0, 50);
-    assert!((params.lambda_squared - 2500.0).abs() < 1e-6);
+    // κ = N = λ = 50 means λ²=2500
+    let params = CcmParams::from_lambda_sq_integer(2500, 50);
+    assert!((params.lambda_squared() - 2500.0).abs() < 1e-12);
     assert_eq!(params.matrix_size(), 101);
 }
 

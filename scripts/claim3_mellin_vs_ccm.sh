@@ -17,7 +17,7 @@ PREC=${PREC:-1000}
 
 echo "=== Claim 3: CCM vs Mellin (λ²=13) at HP-${PREC} ==="
 "$BIN" mellin-compare \
-  --lambda 3.6055512754639896 --n-modes 120 \
+  --lambda-sq 13 --n-modes 120 \
   --precision-digits "$PREC" \
   --t-min 5.0 --t-max 55.0 \
   --n-scan 5000 --n-quad 500
