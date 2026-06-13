@@ -55,9 +55,9 @@ enum Command {
     /// Lemma 7.2 predicts to be a constant C. At HP we observe
     /// `rel × λ²` grows by ~800,000× across λ²=13 to 1000.
     ProlateCompare {
-        /// Value of lambda. Default reproduces λ²=13 (CCM headline config).
-        #[arg(long, default_value_t = 3.605551275463989_f64)]
-        lambda: f64,
+        /// λ² value (integer, e.g. 13, 100, 1000).
+        #[arg(long, default_value_t = 13_u64)]
+        lambda_sq: u64,
         /// Mode cutoff N. Matrix size is 2N+1.
         #[arg(long, default_value_t = 120)]
         n_modes: usize,
@@ -109,9 +109,9 @@ enum Command {
     /// critical line, and compares zero locations against Riemann zeros.
     /// The CCM construction at the same λ is 10⁵⁵ more accurate.
     MellinCompare {
-        /// Value of lambda. Default reproduces λ²=13 (CCM headline config).
-        #[arg(long, default_value_t = 3.605551275463989_f64)]
-        lambda: f64,
+        /// λ² value (integer, e.g. 13, 100, 1000).
+        #[arg(long, default_value_t = 13_u64)]
+        lambda_sq: u64,
         /// Mode cutoff N. Matrix size is 2N+1.
         #[arg(long, default_value_t = 120)]
         n_modes: usize,
@@ -136,14 +136,14 @@ enum Command {
 fn main() -> Result<()> {
     let cli = Cli::parse();
     match cli.command {
-        Command::ProlateCompare { lambda, n_modes, precision_digits, n_grid, n_sample } => {
-            cmd_prolate_compare(lambda, n_modes, precision_digits, n_grid, n_sample)
+        Command::ProlateCompare { lambda_sq, n_modes, precision_digits, n_grid, n_sample } => {
+            cmd_prolate_compare(lambda_sq, n_modes, precision_digits, n_grid, n_sample)
         }
         Command::SliwinskiCheck { lambdas, n_values, precision_digits, trim_edge_fraction } => {
             cmd_sliwinski_check(&lambdas, &n_values, precision_digits, trim_edge_fraction)
         }
-        Command::MellinCompare { lambda, n_modes, precision_digits, t_min, t_max, n_scan, n_quad } => {
-            cmd_mellin_compare(lambda, n_modes, precision_digits, t_min, t_max, n_scan, n_quad)
+        Command::MellinCompare { lambda_sq, n_modes, precision_digits, t_min, t_max, n_scan, n_quad } => {
+            cmd_mellin_compare(lambda_sq, n_modes, precision_digits, t_min, t_max, n_scan, n_quad)
         }
     }
 }
@@ -158,10 +158,16 @@ fn main() -> Result<()> {
 /// toolkit is the sole cache manager.
 #[cfg(feature = "hp")]
 fn compute_xi(
-    lambda: f64, n_modes: usize, precision_digits: u32,
+    lambda_sq: u64, n_modes: usize, precision_digits: u32,
 ) -> Result<(CcmParams, ccm::hp::HighPrecResult)> {
-    let params = CcmParams::from_lambda(lambda, n_modes);
-    let cfg = ccm::hp::HighPrecConfig::for_decimal_digits(precision_digits);
+    let params = CcmParams::from_lambda_sq_integer(lambda_sq, n_modes);
+    let mut cfg = ccm::hp::HighPrecConfig::for_decimal_digits(precision_digits);
+    match std::env::var("XC_CACHE_MODE").as_deref() {
+        Ok("off")   => { cfg.cache_mode = xc_numerics::quadrature::CacheMode::Off; }
+        Ok("local") => { cfg.cache_mode = xc_numerics::quadrature::CacheMode::JsonZip; }
+        Ok("fetch") => { cfg.cache_mode = xc_numerics::quadrature::CacheMode::DynamicFetch; }
+        _ => {}
+    }
     let zeros_strings = xc_zeta::zeros::first_n_strings(Path::new(ZEROS_PATH), cfg.n_eigenvalues)?;
     let zero_seeds: Vec<rug::Float> = zeros_strings.iter()
         .map(|s| rug::Float::with_val(cfg.precision_bits, rug::Float::parse(s).unwrap()))
@@ -171,29 +177,28 @@ fn compute_xi(
 }
 
 fn cmd_prolate_compare(
-    lambda: f64, n_modes: usize, precision_digits: u32,
+    lambda_sq: u64, n_modes: usize, precision_digits: u32,
     n_grid: usize, n_sample: usize,
 ) -> Result<()> {
-    if lambda <= 1.0 {
-        anyhow::bail!("lambda must be > 1 (got {lambda})");
+    if lambda_sq < 2 {
+        anyhow::bail!("lambda_sq must be ≥ 2 (got {lambda_sq})");
     }
     #[cfg(not(feature = "hp"))]
     {
-        let _ = (lambda, n_modes, precision_digits, n_grid, n_sample);
+        let _ = (lambda_sq, n_modes, precision_digits, n_grid, n_sample);
         anyhow::bail!("prolate-compare requires --features hp at build time");
     }
     #[cfg(feature = "hp")]
     {
         use prolate::hp::{compare_xi_to_k_lambda, compute_k_lambda};
 
-        let (params, result) = compute_xi(lambda, n_modes, precision_digits)?;
-        let lambda_squared = params.lambda_squared;
+        let (params, result) = compute_xi(lambda_sq, n_modes, precision_digits)?;
         let prec = result.precision_bits;
         let n_modes = params.n_modes;
         let xi_hp = &result.xi;
-        let lambda_hp = rug::Float::with_val(prec, lambda_squared).sqrt();
-        println!("ξ_λ computed: λ² = {:.6}, λ = {:.6}, N = {}, precision = {} bits",
-            lambda_squared, lambda, n_modes, prec);
+        let lambda_hp = rug::Float::with_val(prec, lambda_sq).sqrt();
+        println!("ξ_λ computed: λ² = {}, λ = {:.6}, N = {}, precision = {} bits",
+            lambda_sq, lambda_hp.to_f64(), n_modes, prec);
         // Display ε_N in HP. At large λ this value can be smaller than
         // 10^-1000 (well below f64 underflow); HP-native display only.
         println!("ε_N = {}",
@@ -233,7 +238,7 @@ fn cmd_prolate_compare(
             v /= &cmp.xi_linf;
             v
         };
-        let lambda_sq_hp = rug::Float::with_val(prec, lambda_squared);
+        let lambda_sq_hp = rug::Float::with_val(prec, lambda_sq);
         let predicted_bound = {
             let mut v = rug::Float::with_val(prec, 1);
             v /= &lambda_sq_hp;
@@ -340,12 +345,14 @@ fn cmd_sliwinski_check(
         // kept in HP — no f64 round-trip, no JSON, terminal output only.
         let mut eps_times_ln_per_config: Vec<rug::Float> = Vec::new();
         let mut all_satisfied = true;
-        let mut hp_results: Vec<(f64, usize, Vec<rug::Float>, u32)> = Vec::new();
+        let mut hp_results: Vec<(f64, usize, Vec<Option<rug::Float>>, u32)> = Vec::new();
 
         for (lambda, n_modes) in lambdas.iter().zip(n_values.iter()) {
             let lambda = *lambda;
             let n_modes = *n_modes;
-            let params = CcmParams::from_lambda(lambda, n_modes);
+            // Sliwinski regime: κ = N = λ (integer), so λ² is exact.
+            let lambda_sq_int = (lambda * lambda).round() as u64;
+            let params = CcmParams::from_lambda_sq_integer(lambda_sq_int, n_modes);
             let mut hpcfg = ccm::hp::HighPrecConfig::for_decimal_digits(precision_digits);
             hpcfg.n_eigenvalues = n_modes.min(zeros_hp.len());
             let hp = ccm::hp::run(&params, &hpcfg, &zero_seeds_hp[..hpcfg.n_eigenvalues])?;
@@ -357,11 +364,13 @@ fn cmd_sliwinski_check(
             let mut max_abs = rug::Float::with_val(prec, 0);
             for k in 0..n_compare {
                 // err_k = |ν_k - ζ_k| in HP.
-                let mut diff = hp.eigenvalues_pos[k].clone();
-                diff -= &zeros_hp[k];
-                let err = diff.abs();
-                sum_abs += &err;
-                if err > max_abs { max_abs = err.clone(); }
+                if let Some(ev) = &hp.eigenvalues_pos[k] {
+                    let mut diff = ev.clone();
+                    diff -= &zeros_hp[k];
+                    let err = diff.abs();
+                    sum_abs += &err;
+                    if err > max_abs { max_abs = err.clone(); }
+                }
             }
             // mean = sum / N in HP.
             let mut mean = sum_abs.clone();
@@ -463,45 +472,47 @@ fn cmd_sliwinski_check(
                 let indices_to_check = [0usize, 4, 9, 19, n_modes.min(zeros_hp.len()) - 1];
                 for &k in &indices_to_check {
                     if k >= eigs_hp.len() || k >= zeros_hp.len() { continue; }
-                    let mut diff = eigs_hp[k].clone();
-                    diff -= &zeros_hp[k];
-                    let abs_err = diff.abs();
+                    if let Some(ev) = &eigs_hp[k] {
+                        let mut diff = ev.clone();
+                        diff -= &zeros_hp[k];
+                        let abs_err = diff.abs();
 
-                    // Matching digits = -log10(|ν_k - ζ_k| / |ζ_k|), HP-native.
-                    let matching_str = if abs_err.is_zero() {
-                        format!(">{}", precision_digits)
-                    } else {
-                        let m = xc_numerics::fmt::matching_digits(&eigs_hp[k], &zeros_hp[k]);
-                        xc_numerics::fmt::display_hp(&m, 4)
-                    };
-
-                    // log10(|err|) in HP. Underflow-safe.
-                    let log10_err_hp = if abs_err.is_zero() {
-                        // Treat as -precision_digits (a finite stand-in).
-                        let mut v = rug::Float::with_val(prec, precision_digits as i64);
-                        v = -v;
-                        v
-                    } else {
-                        abs_err.clone().log10()
-                    };
-                    // implied α = -log10(err) / log10(ln κ) in HP. If err ~
-                    // 1/ln^α(κ), then log10(err) ≈ -α·log10(ln κ).
-                    let implied_alpha_hp = {
-                        if log10_lnk_hp.is_zero() {
-                            rug::Float::with_val(prec, 0)
+                        // Matching digits = -log10(|ν_k - ζ_k| / |ζ_k|), HP-native.
+                        let matching_str = if abs_err.is_zero() {
+                            format!(">{}", precision_digits)
                         } else {
-                            let mut v = log10_err_hp.clone();
-                            v = -v;
-                            v /= &log10_lnk_hp;
-                            v
-                        }
-                    };
+                            let m = xc_numerics::fmt::matching_digits(ev, &zeros_hp[k]);
+                            xc_numerics::fmt::display_hp(&m, 4)
+                        };
 
-                    println!("{:>10.1} {:>8} {:>14} {:>14} {:>14} {:>14}",
-                        lambda, k + 1, matching_str,
-                        xc_numerics::fmt::display_hp(&log10_err_hp, 6),
-                        xc_numerics::fmt::display_hp(&log10_lnk_hp, 6),
-                        xc_numerics::fmt::display_hp(&implied_alpha_hp, 6));
+                        // log10(|err|) in HP. Underflow-safe.
+                        let log10_err_hp = if abs_err.is_zero() {
+                            // Treat as -precision_digits (a finite stand-in).
+                            let mut v = rug::Float::with_val(prec, precision_digits as i64);
+                            v = -v;
+                            v
+                        } else {
+                            abs_err.clone().log10()
+                        };
+                        // implied α = -log10(err) / log10(ln κ) in HP. If err ~
+                        // 1/ln^α(κ), then log10(err) ≈ -α·log10(ln κ).
+                        let implied_alpha_hp = {
+                            if log10_lnk_hp.is_zero() {
+                                rug::Float::with_val(prec, 0)
+                            } else {
+                                let mut v = log10_err_hp.clone();
+                                v = -v;
+                                v /= &log10_lnk_hp;
+                                v
+                            }
+                        };
+
+                        println!("{:>10.1} {:>8} {:>14} {:>14} {:>14} {:>14}",
+                            lambda, k + 1, matching_str,
+                            xc_numerics::fmt::display_hp(&log10_err_hp, 6),
+                            xc_numerics::fmt::display_hp(&log10_lnk_hp, 6),
+                            xc_numerics::fmt::display_hp(&implied_alpha_hp, 6));
+                    }
                 }
             }
             println!();
@@ -558,11 +569,13 @@ fn cmd_sliwinski_check(
                 let mut sum_abs = rug::Float::with_val(prec, 0);
                 let mut max_abs = rug::Float::with_val(prec, 0);
                 for k in 0..n_kept {
-                    let mut diff = eigs_hp[k].clone();
-                    diff -= &zeros_hp[k];
-                    let err = diff.abs();
-                    sum_abs += &err;
-                    if err > max_abs { max_abs = err.clone(); }
+                    if let Some(ev) = &eigs_hp[k] {
+                        let mut diff = ev.clone();
+                        diff -= &zeros_hp[k];
+                        let err = diff.abs();
+                        sum_abs += &err;
+                        if err > max_abs { max_abs = err.clone(); }
+                    }
                 }
                 let mut mean = sum_abs.clone();
                 mean /= rug::Float::with_val(prec, n_kept as u32);
@@ -633,28 +646,27 @@ fn cmd_sliwinski_check(
 }
 
 fn cmd_mellin_compare(
-    lambda: f64, n_modes: usize, precision_digits: u32,
+    lambda_sq: u64, n_modes: usize, precision_digits: u32,
     t_min: f64, t_max: f64,
     n_scan: usize, n_quad: usize,
 ) -> Result<()> {
     #[cfg(not(feature = "hp"))]
     {
-        let _ = (lambda, n_modes, precision_digits, t_min, t_max, n_scan, n_quad);
+        let _ = (lambda_sq, n_modes, precision_digits, t_min, t_max, n_scan, n_quad);
         anyhow::bail!("mellin-compare requires --features hp at build time");
     }
     #[cfg(feature = "hp")]
     {
-        if lambda <= 1.0 {
-            anyhow::bail!("lambda must be > 1 (got {lambda})");
+        if lambda_sq < 2 {
+            anyhow::bail!("lambda_sq must be ≥ 2 (got {lambda_sq})");
         }
-        let (params, result) = compute_xi(lambda, n_modes, precision_digits)?;
-        let lambda_squared = params.lambda_squared;
+        let (params, result) = compute_xi(lambda_sq, n_modes, precision_digits)?;
         let prec = result.precision_bits;
-        let lambda_hp = rug::Float::with_val(prec, lambda_squared).sqrt();
+        let lambda_hp = rug::Float::with_val(prec, lambda_sq).sqrt();
         let xi_hp = &result.xi;
         let n_modes = params.n_modes;
-        println!("ξ_λ computed: λ² = {:.6}, λ = {:.6}, N = {}, precision = {} bits",
-            lambda_squared, lambda, n_modes, prec);
+        println!("ξ_λ computed: λ² = {}, λ = {:.6}, N = {}, precision = {} bits",
+            lambda_sq, lambda_hp.to_f64(), n_modes, prec);
 
         // HP reference zeros loaded as full-precision strings; the f64
         // copy is only used for the t_min/t_max range filter.
