@@ -345,7 +345,7 @@ fn cmd_sliwinski_check(
         // kept in HP — no f64 round-trip, no JSON, terminal output only.
         let mut eps_times_ln_per_config: Vec<rug::Float> = Vec::new();
         let mut all_satisfied = true;
-        let mut hp_results: Vec<(f64, usize, Vec<Option<rug::Float>>, u32)> = Vec::new();
+        let mut hp_results: Vec<(f64, usize, Vec<xc_spectral::ccm::hp::EigenvalueResult>, u32)> = Vec::new();
 
         for (lambda, n_modes) in lambdas.iter().zip(n_values.iter()) {
             let lambda = *lambda;
@@ -364,7 +364,7 @@ fn cmd_sliwinski_check(
             let mut max_abs = rug::Float::with_val(prec, 0);
             for k in 0..n_compare {
                 // err_k = |ν_k - ζ_k| in HP.
-                if let Some(ev) = &hp.eigenvalues_pos[k] {
+                if let Some(ev) = hp.eigenvalues_pos[k].value() {
                     let mut diff = ev.clone();
                     diff -= &zeros_hp[k];
                     let err = diff.abs();
@@ -472,7 +472,7 @@ fn cmd_sliwinski_check(
                 let indices_to_check = [0usize, 4, 9, 19, n_modes.min(zeros_hp.len()) - 1];
                 for &k in &indices_to_check {
                     if k >= eigs_hp.len() || k >= zeros_hp.len() { continue; }
-                    if let Some(ev) = &eigs_hp[k] {
+                    if let Some(ev) = eigs_hp[k].value() {
                         let mut diff = ev.clone();
                         diff -= &zeros_hp[k];
                         let abs_err = diff.abs();
@@ -569,7 +569,7 @@ fn cmd_sliwinski_check(
                 let mut sum_abs = rug::Float::with_val(prec, 0);
                 let mut max_abs = rug::Float::with_val(prec, 0);
                 for k in 0..n_kept {
-                    if let Some(ev) = &eigs_hp[k] {
+                    if let Some(ev) = eigs_hp[k].value() {
                         let mut diff = ev.clone();
                         diff -= &zeros_hp[k];
                         let err = diff.abs();
