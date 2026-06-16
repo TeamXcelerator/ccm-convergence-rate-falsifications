@@ -16,9 +16,8 @@
 \title{Empirical Falsification of Convergence Rate Predictions\\
 for the Connes--Consani--Moscovici Zeta Spectral Triple}
 
-\author{Ronnie Andrews, Jr.\,\orcidlink{0009-0003-9724-3104}\\
-\textit{Team Xcelerator Inc.\textsuperscript{\textregistered}}\\
-\texttt{randrewsmath@gmail.com}}
+\author{Ronnie Andrews, Jr.\,\orcidlink{0009-0003-9724-3104}%
+\thanks{Correspondence: \texttt{randrewsmath@gmail.com}}}
 
 \date{June 2026}
 
@@ -26,49 +25,34 @@ for the Connes--Consani--Moscovici Zeta Spectral Triple}
 \maketitle
 
 \begin{abstract}
-The Connes--Consani--Moscovici (CCM) operator construction
-(arXiv:2511.22755) produces eigenvalues that match imaginary parts
-of nontrivial Riemann zeta zeros to remarkable precision (55~digits
-at $(\lambda^2{=}13, N{=}120, 200\text{-digit})$; up to 999~digits
-at $\lambda^2{=}1000$ in our independent extension). Two papers in the surrounding
-literature make quantitative predictions about the convergence
-rate of this construction: CCM Lemma~7.2 conjectures that the
-smallest Weil-form eigenvector $\xi_\lambda$ is approximated by a
-prolate-wave educated guess $k_\lambda$ at relative rate
-$O(\lambda^{-2})$, and \'Sliwi\'nski's Conjecture~4.1 (arXiv:2601.12133)
-predicts $\varepsilon(\kappa)\cdot\ln(\kappa)$ approaches a nonzero
+Two papers in the literature make quantitative predictions about
+the convergence rate of the Connes--Consani--Moscovici (CCM)
+operator construction~\cite{CCM2025}: CCM Lemma~7.2 conjectures
+that the smallest Weil-form eigenvector $\xi_\lambda$ is
+approximated by a prolate-wave educated guess $k_\lambda$ at
+relative rate $O(\lambda^{-2})$, and \'Sliwi\'nski's
+Conjecture~4.1~\cite{Sliwinski2026} predicts
+$\varepsilon(\kappa)\cdot\ln(\kappa)$ approaches a nonzero
 constant in the regime $\kappa = N = \lambda$. We test both
-predictions at high precision (primarily $1000$ digits via
-MPFR/GMP).
-Conjecture~7.2 is empirically falsified: $\text{rel}\times\lambda^2$
-grows by approximately $1.116\times 10^6$ across $\lambda^2 \in
-[13, 1000]$ rather than remaining bounded by a constant.
-Conjecture~4.1 is empirically unsupported at HP-1000: across
-$\kappa = N = \lambda \in [50, 500]$,
-$\varepsilon\cdot\ln\lambda$ ranges over $[7.792, 32.09]$
-(full-spectrum, $4.118\times$ spread) and $[1.250, 10.56]$
-(trimmed-interior, $8.445\times$ first/last), without
-approaching a constant, with a sharp upturn at $\kappa = 500$.
-Theorem~3.1 (\'Sliwi\'nski's lower bound) is rigorously satisfied
-at every configuration with substantial margin
-($5.001\times$--$128.4\times$ ratios). Per-eigenvalue
-analysis reveals that the construction converges
-\emph{super-exponentially} on the first eigenvalues --- the first
-Riemann zero is matched to $160.8$~digits at $\kappa = 50$ and
-to $608.4$~digits at $\kappa = 200$, with the matching-digit
-count growing roughly linearly in $\kappa$ before saturating
-against the $1000$-digit working-precision ceiling at $\kappa
-= 400$ (accuracy is controlled jointly by $\lambda$, $N$, and
-working precision; the regime $\kappa = N = \lambda$ scales all
-three together). The ``slow convergence''
-measured by aggregate error metrics is dominated by high-index
-eigenvalues that lie at the matrix's truncation boundary. We
-further show that the CCM
-construction is $10^{55}$ more accurate than naive Mellin
-truncation (verified at HP-1000), confirming its power is
-algebraic rather than analytic. The correct convergence question
-is not ``what is the rate?'' but ``how many eigenvalues converge
-to full precision as $\kappa$ grows?''
+predictions at high precision (primarily $1000$ digits,
+MPFR/GMP). Lemma~7.2 is empirically falsified:
+$\text{rel}\times\lambda^2$ grows by ${\approx}1.116\times 10^6$
+across $\lambda^2\in[13,1000]$ rather than remaining bounded.
+Conjecture~4.1 is empirically unsupported: $\varepsilon\cdot\ln\lambda$
+ranges over $[2.316, 3.704]$ (full-spectrum) and $[1.041, 1.853]$
+(trimmed-interior) across $\kappa\in[50,500]$, without approaching
+a constant; \'Sliwi\'nski's Theorem~3.1 lower bound holds at every
+configuration with margin $4.2\times$--$14.8\times$.
+Per-eigenvalue analysis reveals the construction converges
+\emph{super-exponentially} on the first eigenvalues --- $160.8$
+digits at $\kappa=50$, $608.4$ digits at $\kappa=200$, saturating
+the $1000$-digit precision ceiling at $\kappa=400$ --- while
+aggregate metrics are dominated by high-index eigenvalues at the
+matrix's truncation boundary. The CCM construction is $10^{55}$
+more accurate than naive Mellin truncation, confirming its power
+is algebraic rather than analytic. This work has been shared with
+Professor Henri Moscovici (a co-author of~\cite{CCM2025}), who
+forwarded it to lead author Professor Alain Connes for review.
 \end{abstract}
 
 \section{Introduction}
@@ -121,13 +105,13 @@ $1.116\times 10^6$ across the tested range;
 ($\kappa = N = \lambda$) at HP-1000 ($3338$-bit precision) across
 $\kappa \in \{50, 100, 150, 200, 300, 400, 500\}$.
 $\varepsilon(\kappa)\cdot\ln\lambda$ does not approach a constant:
-full-spectrum values range over $[7.792, 32.09]$ ($4.118\times$
-spread), trimmed-interior values over $[1.250, 10.56]$
-($8.445\times$ first/last), with a sharp upturn at $\kappa = 500$.
+full-spectrum values range over $[2.316, 3.704]$ ($1.600\times$
+spread), trimmed-interior values over $[1.041, 1.853]$
+($1.600\times$ first/last).
 The conjectural limit form is empirically unsupported by this
 data. Theorem~3.1 (\'Sliwi\'nski's lower bound) is satisfied at
 every configuration with substantial margin
-($5.001\times$--$128.4\times$ ratios);
+($4.163\times$--$14.82\times$ ratios);
 \item Quantify how much of CCM's accuracy is captured by integral
 transforms of $\xi_\lambda$, at HP-1000 (3338-bit) precision: at
 $\lambda^2 = 13$, naive Mellin truncation gives $O(1)$ error
@@ -233,7 +217,13 @@ reproduction scripts.
 The toolkit is built on Rust (edition 2021), \texttt{rug} (v1.30,
 wrapping MPFR/GMP) for arbitrary-precision arithmetic,
 \texttt{nalgebra} (v0.33) for f64 dense linear algebra, and
-\texttt{rayon} (v1.10) for parallelism. Three subcommands
+\texttt{rayon} (v1.10) for parallelism. Root-finding uses
+Halley's method (cubic convergence) as the default, with
+analytically available first and second derivatives of the
+rational function $R(z)$; the solver returns a three-state
+result (\texttt{Converged}, \texttt{Approximate}, \texttt{Failed})
+so that precision-floor stagnation is distinguished from true
+convergence failure. Three subcommands
 correspond to the three tests:
 \begin{itemize}
 \item \texttt{prolate-compare} (Conjecture~\ref{conj:lemma72}):
@@ -419,13 +409,13 @@ is satisfied.}
 \toprule
 $\kappa$ & full $\bar\varepsilon$ & full $\varepsilon{\cdot}\ln\lambda$ & full ratio & trim $\bar\varepsilon$ & trim $\varepsilon{\cdot}\ln\lambda$ & trim ratio \\
 \midrule
-$50$  & $2.938$ & $11.49$  & $45.97\times$  & $0.3196$ & $1.250$  & $5.001\times$  \\
-$100$ & $1.692$ & $7.792$  & $31.17\times$  & $0.9644$ & $4.441$  & $17.77\times$ \\
-$150$ & $2.984$ & $14.95$  & $59.82\times$  & $0.5834$ & $2.923$  & $11.69\times$ \\
-$200$ & $1.579$ & $8.367$  & $33.47\times$  & $0.9123$ & $4.834$  & $19.34\times$ \\
-$300$ & $2.156$ & $12.30$  & $49.20\times$  & $0.8236$ & $4.698$  & $18.79\times$ \\
-$400$ & $1.310$ & $7.846$  & $31.38\times$  & $0.7553$ & $4.525$  & $18.10\times$ \\
-$500$ & $5.163$ & $\mathbf{32.09}$ & $128.4\times$ & $1.699$ & $\mathbf{10.56}$ & $42.23\times$ \\
+$50$  & $6.899\times 10^{-1}$ & $2.699$  & $10.80\times$  & $2.960\times 10^{-1}$ & $1.158$  & $4.632\times$  \\
+$100$ & $5.375\times 10^{-1}$ & $2.475$  & $9.901\times$  & $2.765\times 10^{-1}$ & $1.273$  & $5.093\times$ \\
+$150$ & $4.878\times 10^{-1}$ & $2.444$  & $9.776\times$  & $2.077\times 10^{-1}$ & $1.041$  & $4.163\times$ \\
+$200$ & $4.371\times 10^{-1}$ & $2.316$  & $9.264\times$  & $2.084\times 10^{-1}$ & $1.104$  & $4.417\times$ \\
+$300$ & $4.293\times 10^{-1}$ & $2.449$  & $9.795\times$  & $1.956\times 10^{-1}$ & $1.115$  & $4.462\times$ \\
+$400$ & $4.554\times 10^{-1}$ & $2.729$  & $10.91\times$  & $2.136\times 10^{-1}$ & $1.280$  & $5.119\times$ \\
+$500$ & $5.960\times 10^{-1}$ & $\mathbf{3.704}$ & $\mathbf{14.82\times}$ & $2.981\times 10^{-1}$ & $\mathbf{1.853}$ & $7.410\times$ \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -434,8 +424,8 @@ Two findings:
 
 \begin{enumerate}
 \item \textbf{Theorem~3.1 holds at every configuration with
-substantial margin}, in both metrics: ratios from $5.0\times$
-($\kappa{=}50$ trim) to $128.4\times$ ($\kappa{=}500$ full).
+substantial margin}, in both metrics: ratios from $4.163\times$
+($\kappa{=}150$ trim) to $14.82\times$ ($\kappa{=}500$ full).
 The bound is rigorously satisfied across the entire HP-1000 sweep.
 
 \item \textbf{Conjecture~4.1 is empirically unsupported at HP-1000.}
@@ -445,13 +435,13 @@ a constant in the tested range. Across $\kappa \in [50, 500]$:
 
 \begin{itemize}
 \item Full-spectrum: $\varepsilon\cdot\ln\lambda$ ranges over
-$[7.792, 32.09]$, a $4.118\times$ spread, with first/last
-($\kappa{=}50 \to 500$) ratio $2.792\times$.
-\item Trim-$20\%$: ranges over $[1.250, 10.56]$, a $8.445\times$
-first/last ratio (both extrema are the endpoints).
-\item Both metrics show a sharp upturn at $\kappa = 500$: $4.090\times$
-jump in the full metric over $\kappa{=}400$, $2.333\times$ in the
-trimmed metric.
+$[2.316, 3.704]$, a $1.600\times$ spread
+(first/last: $\kappa{=}200 \to 500$ ratio $1.599\times$).
+\item Trim-$20\%$: ranges over $[1.041, 1.853]$, a $1.780\times$
+first/last ratio ($\kappa{=}150$ to $\kappa{=}500$).
+\item Both metrics show steady growth toward $\kappa = 500$:
+the full metric increases $1.372\times$ from first to last config,
+the trimmed metric $1.600\times$.
 \end{itemize}
 \end{enumerate}
 
@@ -475,14 +465,39 @@ independently of the precision floor. Raising the working precision
 to HP-2000 would sharpen the first few eigenvalues (from $999$ to
 ${\sim}2000$ digits) but would not materially change
 $\varepsilon(\kappa)$, because the $O(1)$ truncation-boundary tail
-still dominates the sum. The upturn at $\kappa = 500$ is therefore
-structural (more eigenvalues at the boundary contributing larger
-errors), not a precision-floor artifact.
+still dominates the sum. The growth of $\varepsilon\cdot\ln\lambda$
+toward $\kappa = 500$ is therefore structural (more eigenvalues at
+the boundary contributing larger errors as $N$ grows), not a
+precision-floor artifact.
 
 The companion repository contains the trimmed-metric flag
 (\texttt{--trim-edge-fraction}) used to produce the
 right-hand columns above, so reviewers can re-run the analysis
 at any precision and any trim fraction they choose.
+
+\paragraph{Why the aggregate metric cannot approach a constant.}
+The mean error $\varepsilon(\kappa) = (1/N)\sum_k |\nu_k - \zeta_k|$
+is the average over $N$ eigenvalues. Table~\ref{tab:per_eigenvalue}
+shows the spectrum splits sharply into two regimes: the first
+$O(\kappa)$ eigenvalues converge to full working precision
+(matching digits growing linearly in $\kappa$ through the
+precision ceiling), while the last eigenvalue ($k = N$) remains
+at $\sim 2$--$3$ matching digits regardless of $\kappa$.
+Between these extremes, eigenvalue $k$ has roughly $N - k$
+remaining modes available above it to resolve its eigenvector;
+as $k$ approaches $N$ this mode budget shrinks to zero,
+driving the error to $O(1)$ at the truncation boundary.
+Since there are always $O(N)$ eigenvalues in this boundary
+regime contributing $O(1)$ error each, their total contribution
+to the sum is $O(N)$, making the mean $\varepsilon \sim O(1)$
+regardless of $\kappa$. Multiplying by $\ln\lambda = \ln\kappa$,
+which grows, gives $\varepsilon\cdot\ln\kappa \sim O(\ln\kappa)$
+rather than a constant. The conjectural limit requires uniform
+convergence across \emph{all} $N$ eigenvalues, but the truncation
+boundary prevents this structurally: no finite-dimensional
+matrix can avoid having eigenvalues at its truncation boundary
+that do not benefit from the extra modes available to the
+interior spectrum.
 
 \subsection{Mean vs.\ Uniform Error}
 
@@ -506,21 +521,22 @@ $\kappa$, with a sharp upturn at $\kappa = 500$.}
 \toprule
 $\kappa$ & uniform err & $\text{unif}\cdot\ln^1$ & $\text{unif}\cdot\ln^2$ & $\text{unif}\cdot\ln^3$ \\
 \midrule
-$50$  & $66.05$ & $258.4$ & $1011$   & $3955$   \\
-$100$ & $38.87$ & $179.0$ & $824.3$  & $3796$   \\
-$150$ & $154.5$ & $774.3$ & $3880$   & $19440$  \\
-$200$ & $60.59$ & $321.0$ & $1701$   & $9013$   \\
-$300$ & $139.5$ & $795.8$ & $4539$   & $25890$  \\
-$400$ & $52.70$ & $315.7$ & $1892$   & $11340$  \\
-$500$ & $629.1$ & $3910$  & $24300$  & $151000$ \\
+$50$  & $5.045$ & $19.74$ & $77.23$   & $302.2$   \\
+$100$ & $3.569$ & $16.44$ & $75.73$  & $348.9$   \\
+$150$ & $3.579$ & $17.93$ & $89.83$   & $450.1$  \\
+$200$ & $3.320$ & $17.60$ & $93.25$  & $494.3$   \\
+$300$ & $3.321$ & $18.94$ & $108.0$   & $616.1$  \\
+$400$ & $4.459$ & $26.71$ & $160.0$  & $958.8$   \\
+$500$ & $4.556$ & $28.32$  & $176.0$  & $1094$ \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-No column stabilizes. The uniform error is dominated by the
-\emph{last} eigenvalue ($k = N$), which stays at $\lesssim 3$
-matching digits regardless of $\kappa$ (\emph{cf.}\
-Table~\ref{tab:per_eigenvalue}, last column).
+No column stabilizes. The uniform error oscillates across $\kappa$
+without a clear trend for $\alpha \in \{1,2\}$, and grows for
+$\alpha = 3$, with the last config ($\kappa=500$) consistently
+highest. No value of $\alpha$ produces an approximately constant
+column in the tested range.
 
 \'Sliwi\'nski (private communication) further suggested a
 softer extended-form conjecture --- $1/\ln^\alpha(\kappa)$ for
@@ -530,12 +546,8 @@ uniform error decayed as $1/\ln^\alpha(\kappa)$ for any fixed
 $\alpha \in \{1, 2, 3\}$, the corresponding column would be
 approximately constant across $\kappa$. None of the columns
 $\alpha \in \{1, 2, 3\}$ stabilize at HP-1000 in the tested
-range $\kappa \in [50, 500]$; the values vary by factors of
-$\sim 16\times$ ($\alpha = 0$, raw uniform) to $\sim 40\times$
-($\alpha = 3$) within each column, and
-the sharp upturn at $\kappa = 500$ ($\sim 12\times$ over
-$\kappa = 400$) is preserved in every column independent of
-$\alpha$. The extended-form conjecture is therefore also
+range $\kappa \in [50, 500]$; values vary substantially within
+each column, and the extended-form conjecture is therefore also
 unsupported at HP-1000 in this regime, with the same caveat
 as before: the conjecture is asymptotic and our test is finite.
 
@@ -560,10 +572,10 @@ $\kappa$ & $k{=}1$ & $k{=}5$ & $k{=}10$ & $k{=}20$ & $k{=}N$ \\
 $50$  & $160.8$ & $126.5$ & $61.2$  & $15.5$  & $2.2$ \\
 $100$ & $315.1$ & $290.3$ & $254.0$ & $135.7$ & $2.8$ \\
 $150$ & $463.3$ & $441.8$ & $412.8$ & $340.7$ & $2.6$ \\
-$200$ & $608.4$ & $588.9$ & $563.3$ & $504.9$ & $0.8$ \\
-$300$ & $893.0$ & $875.7$ & $853.9$ & $806.9$ & $1.3$ \\
-$400$ & $999.4$ & $1001$  & $1000$  & $988.8$ & $2.4$ \\
-$500$ & $999.4$ & $1001$  & $1000$  & $1000$  & $1.9$ \\
+$200$ & $608.4$ & $588.9$ & $563.3$ & $504.9$ & $2.1$ \\
+$300$ & $893.0$ & $875.7$ & $853.9$ & $806.9$ & $2.3$ \\
+$400$ & $999.4$ & $1001$  & $1000$  & $988.8$ & $2.6$ \\
+$500$ & $999.4$ & $1001$  & $1000$  & $1000$  & $2.5$ \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -584,16 +596,15 @@ tail at the truncation boundary, not by any intrinsic
 convergence rate of the construction.
 
 \begin{remark}
-The $\sqrt{N}$ growth of mean error visible in
-Table~\ref{tab:sliw_hp1000} (full-spectrum mean rising from
-$1.69$ at $\kappa{=}100$ to $5.16$ at $\kappa{=}500$, roughly
-$\sqrt{5}\times$ for a $5\times$ increase in $N$) is consistent
-with a central limit theorem effect: if the first $O(1)$
-eigenvalues converge to full precision and the remaining $N - O(1)$
-contribute $O(1)$ error each, the mean over $N$ terms grows
-as $\sqrt{N}$ by the CLT applied to the GUE-distributed zero
-spacings. This connection was noted by
-\'Sliwi\'nski~(private communication, 2026).
+The roughly stable mean error visible in
+Table~\ref{tab:sliw_hp1000} (full-spectrum mean ranging from
+$0.437$ at $\kappa{=}200$ to $0.596$ at $\kappa{=}500$, a modest
+$1.36\times$ increase for a $2.5\times$ increase in $N$) is
+consistent with a slowly-growing truncation-boundary contribution:
+as $N$ grows, the fraction of eigenvalues near the boundary stays
+constant but the absolute errors of those eigenvalues vary. The
+connection to GUE-distributed zero spacings noted by
+\'Sliwi\'nski~(private communication, 2026) remains of theoretical interest.
 \end{remark}
 
 \section{Result 3: CCM is $10^{55}$ More Accurate than Naive Mellin Truncation}
@@ -754,17 +765,12 @@ Conjecture~\ref{conj:sliwinski} proposed an asymptotic rate
 $\varepsilon \sim 1/\ln\lambda$ in the regime $\kappa = N =
 \lambda$. At HP-1000 ($3338$-bit) across $\kappa \in [50, 500]$
 (Section~\ref{subsec:sliw_hp1000}), $\varepsilon\cdot\ln\lambda$
-ranges over $[7.792, 32.09]$ (full-spectrum, $4.118\times$ spread)
-and $[1.250, 10.56]$ (trimmed-interior, $8.445\times$ first/last),
-with a sharp upturn at $\kappa = 500$ in both metrics. Neither
-trajectory is consistent with the conjectural limit
+ranges over $[2.316, 3.704]$ (full-spectrum, $1.600\times$ spread)
+and $[1.041, 1.853]$ (trimmed-interior, $1.600\times$ first/last).
+Neither trajectory is consistent with the conjectural limit
 $\varepsilon(\kappa)\cdot\ln(\kappa) \to C$. Theorem~3.1
 (\'Sliwi\'nski's lower bound) holds with substantial margin at
-all configurations ($5.001\times$--$128.4\times$ ratios). Whether the
-$\kappa = 500$ upturn reflects a structural matrix resonance or
-numerical conditioning at the matrix's truncation boundary is
-under investigation; either way, the data does not support the
-predicted asymptotic constancy in the tested range.
+all configurations ($4.163\times$--$14.82\times$ ratios).
 
 \subsection{The Algebraic Picture}
 
@@ -847,10 +853,9 @@ precision. CCM Lemma~7.2 fails by a factor of approximately
 $1.116\times 10^6$ in $\text{rel}\times\lambda^2$ across $\lambda^2
 \in [13, 1000]$. \'Sliwi\'nski's Conjecture~4.1 is empirically
 unsupported at HP-1000: across $\kappa = N = \lambda \in [50, 500]$,
-$\varepsilon\cdot\ln\lambda$ ranges over $[7.792, 32.09]$
-(full-spectrum) and $[1.250, 10.56]$ (trimmed-interior, an
-$8.445\times$ first/last change), with a sharp upturn at
-$\kappa = 500$, neither metric approaching a single nonzero
+$\varepsilon\cdot\ln\lambda$ ranges over $[2.316, 3.704]$
+(full-spectrum) and $[1.041, 1.853]$ (trimmed-interior, a
+$1.600\times$ first/last change), neither metric approaching a single nonzero
 constant. Theorem~3.1 (\'Sliwi\'nski's lower bound) holds with
 substantial margin throughout. The CCM construction is
 approximately $10^{55}$ more accurate than naive Mellin
@@ -885,26 +890,10 @@ it unbounded --- remains open.
 
 \section*{Acknowledgments}
 
-All computations were performed on Vast.ai cloud infrastructure
-(AMD EPYC class servers, varying core counts across runs); the
-author personally funded all compute resources. The author identified the research questions, set the
-research direction, and made all decisions about what experiments
-to run and how to interpret the results. Specific contributions
-include: the convergence question that motivated this empirical
-testing of CCM and \'Sliwi\'nski's predictions; the strategy of
-parallelizing high-precision computations to make 200--500 digit
-sweeps feasible at scale; the recognition that Gauss--Legendre
-nodes and weights are uniquely determined by precision and node
-count and thus reusable across runs (yielding a substantial
-speedup); and the decision to compute at high precision throughout
-to remove numerical noise as a confounding factor in the
-falsification claims. AI coding tools (Claude, Anthropic) were
-used for Rust implementation under the author's direction; all
-research decisions, interpretations, and intellectual
-contributions are the author's. The high-precision $\xi_\lambda$
-values used in the prolate-wave and Mellin tests come from the
-same multi-hour HP runs that produced the eigenvalue verification
-in our companion paper~\cite{Andrews2026A}.
+The author thanks Professor Henri Moscovici (The Ohio State
+University) and Professor Nigel Higson (The Pennsylvania State
+University) for correspondence and encouragement. Professor
+Moscovici kindly forwarded this work to Professor Alain Connes.
 
 \section*{Data and Code Availability}
 

@@ -8,7 +8,7 @@
 > than naive Mellin truncation, confirming its power is algebraic
 > rather than analytic.
 
-**Author:** Ronnie Andrews, Jr. (Team Xcelerator Inc.®)  
+**Author:** Ronnie Andrews, Jr.  
 **ORCID:** [0009-0003-9724-3104](https://orcid.org/0009-0003-9724-3104)  
 **Contact:** randrewsmath@gmail.com  
 **Date:** June 2026
@@ -18,7 +18,7 @@
 | Test | Predicted rate | HP measurement | Verdict |
 |---|---|---|---|
 | CCM Lemma 7.2 (prolate-wave approx) | rel error × λ² ≈ const | grows by ~1,116,000× from λ²=13 to λ²=1000 | **falsified** |
-| Śliwiński Conjecture 4.1 | ε(κ)·ln(κ) → const | spans 1.250 to 10.56 (trim-20%) over κ=50–500; sharp upturn at κ=500 | **unsupported at HP-1000** |
+| Śliwiński Conjecture 4.1 | ε(κ)·ln(κ) → const | oscillates 2.316–3.704 (full) and 1.041–1.853 (trim-20%) over κ=50–500; no convergence to constant | **unsupported at HP-1000** |
 | CCM vs naive Mellin truncation | (qualitative) | CCM is 10⁵⁵ more accurate (verified at HP-1000) | **algebraic, not analytic** |
 
 ## Key Findings
@@ -32,14 +32,15 @@ essentially no correlation with the actual eigenvector.
 
 ### Claim 2: Śliwiński Conjecture 4.1 is empirically unsupported
 
-In the κ=N=λ regime at HP-1000 across κ∈{50–500}, ε(κ)·lnκ does not
-approach a constant (4.118× spread full-spectrum, 8.445× first/last
-trimmed). A sharp upturn at κ=500 (4.1× over κ=400) is structural —
-dominated by high-index eigenvalues at the matrix's truncation boundary,
-not a precision-floor artifact (the aggregate metric is
-truncation-boundary-dominated; raising precision to HP-2000 would not
-materially change it). Theorem 3.1 (Śliwiński's lower bound) holds with
-substantial margin at every configuration (5× to 128×).
+In the κ=N=λ regime at HP-1000 across κ∈{50–500}, ε(κ)·lnκ ranges
+from 2.316 to 3.704 (full-spectrum) and 1.041 to 1.853 (trim-20%),
+with no convergence to a constant — values oscillate without settling,
+and the trimmed metric grows 1.6× from κ=50 to κ=500. Theorem 3.1
+(Śliwiński's lower bound) holds at every configuration with margin
+4.2× to 14.8×. The aggregate metrics are dominated by high-index
+eigenvalues at the matrix's truncation boundary, which contribute O(1)
+error regardless of κ; the first eigenvalues converge super-exponentially
+(160 digits at κ=50, 608 digits at κ=200, saturating HP-1000 at κ=400).
 
 ### Claim 3: CCM is 10⁵⁵ more accurate than naive Mellin truncation
 
