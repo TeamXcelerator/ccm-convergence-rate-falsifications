@@ -208,26 +208,28 @@ Toolkit,\footnote{\url{https://github.com/TeamXcelerator/xcelerator-toolkit}}
 a publicly available library of high-precision spectral methods for
 analytic number theory, pinned to a tagged release for reproducibility.
 The toolkit provides the core numerical
-primitives (Gauss--Legendre quadrature with disk-cached HP nodes,
-LU-based inverse iteration, Newton refinement) and the CCM-specific
-construction, prolate-wave operators, and Mellin transforms. The
-paper-specific repository contains only the CLI harness and
-reproduction scripts.
+primitives (managed high-precision Gauss--Legendre quadrature,
+factorization-backed eigenstate solvers, and Halley root refinement)
+and the CCM-specific construction, prolate-wave operators, and
+Mellin transforms. Reusable components, matrices, eigenstates, roots,
+and prolate spectra are resolved through the toolkit's
+content-addressed artifact fabric. The paper-specific repository
+contains only the CLI harness and reproduction scripts.
 
-The toolkit is built on Rust (edition 2021), \texttt{rug} (v1.30,
-wrapping MPFR/GMP) for arbitrary-precision arithmetic,
-\texttt{nalgebra} (v0.33) for f64 dense linear algebra, and
-\texttt{rayon} (v1.10) for parallelism. Root-finding uses
+The toolkit is built on Rust (edition 2021), \texttt{rug}
+(wrapping MPFR/GMP) for arbitrary-precision arithmetic,
+\texttt{nalgebra} for f64 dense linear algebra, and
+\texttt{rayon} for parallelism. Root-finding uses
 Halley's method (cubic convergence) as the default, with
 analytically available first and second derivatives of the
-rational function $R(z)$; the solver returns a three-state
-result (\texttt{Converged}, \texttt{Approximate}, \texttt{Failed})
-so that precision-floor stagnation is distinguished from true
-convergence failure. Three subcommands
+rational function $R(z)$; the solver reports
+\texttt{Converged}, \texttt{Stagnated}, \texttt{Approximate}, or
+\texttt{Failed}, preserving finite precision-floor approximations
+and their diagnostics without labeling them as converged. Three subcommands
 correspond to the three tests:
 \begin{itemize}
 \item \texttt{prolate-compare} (Conjecture~\ref{conj:lemma72}):
-loads a pre-computed $\xi_\lambda$ JSON, builds $\text{PW}_\lambda$
+computes or reuses the finite CCM source $\xi_\lambda$, builds $\text{PW}_\lambda$
 via 3-point finite differences on a uniform grid, identifies
 $h_{0,\lambda}$ and $h_{4,\lambda}$ by parity and node-counting,
 forms $h_\lambda$ and applies the $\mathcal{E}$ map, then computes
@@ -239,15 +241,27 @@ configurations, computes the full positive eigenvalue spectrum,
 and tabulates $\varepsilon(\lambda, N)$ against
 $1/(4\ln\lambda)$ and $\varepsilon\cdot\ln\lambda$.
 \item \texttt{mellin-compare} (CCM vs Mellin truncation): scans
-the critical line $\Re(s) = 1/2$ for zeros of both $\Lambda_\lambda(s)$
-and $G(s)$ via Gauss--Legendre quadrature, then bisects in
-high precision to locate each zero precisely.
+the critical line $\Re(s) = 1/2$ for zeros of $\Lambda_\lambda(s)$
+and, when requested, $G(s)$ via Gauss--Legendre quadrature, then
+bisects in high precision to locate each zero precisely.
 \end{itemize}
 
-The high-precision $\xi_\lambda$ values are reused from the same
-runs that produced the eigenvalue verification in our companion
-paper~\cite{Andrews2026A}, ensuring consistency between the two
-papers' empirical foundations.
+The reported tables were originally computed with Toolkit v0.12.1,
+whose HP-1000 configuration used $3338$ working bits (16 guard bits).
+The modern reproduction harness is pinned to Toolkit v0.13.3 and
+retains an explicit \texttt{paper} profile for the original
+full-space adaptive-even/legacy-solver route. Modern HP-1000 reruns
+use the stronger 64-guard-bit contract ($3386$ working bits);
+agreement is therefore assessed numerically rather than by requiring
+byte-identical artifacts.
+
+The high-precision $\xi_\lambda$ values are resolved from the same
+content-addressed CCM artifact families used by the companion
+reproduction~\cite{Andrews2026A}, or recomputed under the selected
+profile on a cache miss. The explicitly seeded spectral comparisons
+use the toolkit-owned 2500-digit zero table; these ordinates were
+computed with Arb interval arithmetic and their leading 1000 digits
+were independently checked against Odlyzko's tabulation.
 
 \section{Result 1: CCM Lemma~7.2 is Empirically Falsified}
 \label{sec:lemma72}
@@ -260,10 +274,11 @@ three configurations:
 \begin{table}[h]
 \centering
 \caption{Prolate-wave approximation of $\xi_\lambda$ at HP-1000
-working precision ($3338$-bit, MPFR/GMP). All three $\xi_\lambda$
-values pre-computed at HP-1000 and committed to the data
-directory; banded tridiagonal LU recovers each prolate
-eigenvector at HP-1000 in milliseconds.}
+working precision ($3338$-bit, MPFR/GMP) in the original reported
+runs. The reproduction harness computes or reuses each
+$\xi_\lambda$ through the toolkit-managed artifact fabric; banded
+tridiagonal LU recovers each prolate eigenvector at HP-1000 in
+milliseconds.}
 \label{tab:lemma72}
 \begin{tabular}{@{}llrrr@{}}
 \toprule

@@ -3,65 +3,81 @@
 
 //! Integration tests for the ccm-falsifications binary.
 //!
-//! HP-only by design — Paper B's claims are HP-1000 results, so the
-//! tests exercise the same HP code paths the binary actually uses on
-//! Vast. The f64 tier is not tested here because it is not used by
-//! any published claim.
-//!
-//! All tests below require `--features hp` at build time. On Windows
-//! (where rug doesn't link with MSVC) the suite is empty by design;
-//! HP testing happens on Vast where the publication runs also occur.
-//!
-//! Run with: `cargo test --release --features hp`
+//! Lightweight structural tests run on every platform. HP numerical smoke
+//! tests are enabled with `--features hp` and run on Linux/WSL.
 
-#![cfg(feature = "hp")]
-
-use std::path::Path;
 use xc_spectral::ccm::CcmParams;
 
-/// Reference zeros file should exist and load as HP decimal strings.
-/// Uses the toolkit's HP loader (no f64 round-trip).
+/// The toolkit-owned reference table replaces paper-local zero fixtures.
 #[test]
-fn reference_zeros_loadable_hp() {
-    let path = Path::new("data/zeta_zeros.json");
-    assert!(path.exists(), "data/zeta_zeros.json must exist");
-    let strings = xc_zeta::zeros::first_n_strings(path, 200).unwrap();
+fn bundled_reference_zeros_are_available() {
+    let strings = xc_zeta::zeros::bundled_first_n_strings(200).unwrap();
     assert_eq!(strings.len(), 200);
-    // First zero is ~14.1347... — check the leading digits as a string.
-    assert!(strings[0].starts_with("14.134725"),
-        "first zero should start with 14.134725, got {:?}", &strings[0][..30]);
-    // Every entry should be a long decimal (HP-1000d zeros are ~1000 chars).
+    assert!(
+        strings[0].starts_with("14.134725"),
+        "first zero should start with 14.134725, got {:?}",
+        &strings[0][..30]
+    );
     let median_len = {
         let mut lens: Vec<usize> = strings.iter().map(|s| s.len()).collect();
         lens.sort();
         lens[lens.len() / 2]
     };
-    assert!(median_len > 100,
-        "expected HP zeros (>100 chars), got median length {}", median_len);
+    assert!(
+        median_len > 2_000,
+        "expected 2,500-digit bundled zeros, got median length {}",
+        median_len
+    );
+    let identity = xc_zeta::zeros::bundled_dataset_identity().unwrap();
+    assert!(identity.validate());
+    assert_eq!(identity.record_count, 1_000);
+    assert_eq!(identity.decimal_digits, 2_500);
 }
 
-/// HP zeros loader at HP-1000 precision returns HP Floats with the
-/// requested precision and a sane first-zero magnitude.
+/// The independently runnable wrappers cover every paper table row.
 #[test]
-fn reference_zeros_load_hp_1000() {
-    let path = Path::new("data/zeta_zeros.json");
-    // HP-1000 ≈ 3322 bits.
-    let prec_bits: u32 = 3322;
-    let zeros = xc_zeta::zeros::first_n_hp(path, 5, prec_bits).unwrap();
+fn claim_script_inventory_is_complete() {
+    for relative in [
+        "scripts/claim1a_lambda13_grid4001.sh",
+        "scripts/claim1b_lambda100_grid4001.sh",
+        "scripts/claim1c_lambda100_grid8001.sh",
+        "scripts/claim1d_lambda1000_grid8001.sh",
+        "scripts/claim2_standard_ccm.sh",
+        "scripts/claim2a_kappa50.sh",
+        "scripts/claim2g_kappa500.sh",
+        "scripts/claim3a_lambda13_weighted.sh",
+        "scripts/claim3b_lambda100_naive.sh",
+    ] {
+        assert!(
+            std::path::Path::new(relative).is_file(),
+            "missing {relative}"
+        );
+    }
+}
+
+/// HP parsing of bundled strings retains the requested MPFR precision.
+#[cfg(feature = "hp")]
+#[test]
+fn bundled_reference_zeros_load_hp_1000() {
+    let prec_bits: u32 = 3386;
+    let strings = xc_zeta::zeros::bundled_first_n_strings(5).unwrap();
+    let zeros = strings
+        .iter()
+        .map(|value| {
+            rug::Float::with_val(
+                prec_bits,
+                rug::Float::parse(value).expect("bundled zero parses"),
+            )
+        })
+        .collect::<Vec<_>>();
     assert_eq!(zeros.len(), 5);
     assert_eq!(zeros[0].prec(), prec_bits);
-    // First zero is in (14.13, 14.14). Bounds parsed from decimal
-    // strings so there's no f64 round-trip — strict HP-everywhere.
-    let lo = rug::Float::with_val(
-        prec_bits,
-        rug::Float::parse("14.13").unwrap(),
+    let lo = rug::Float::with_val(prec_bits, rug::Float::parse("14.13").unwrap());
+    let hi = rug::Float::with_val(prec_bits, rug::Float::parse("14.14").unwrap());
+    assert!(
+        zeros[0] > lo && zeros[0] < hi,
+        "first zero out of expected range"
     );
-    let hi = rug::Float::with_val(
-        prec_bits,
-        rug::Float::parse("14.14").unwrap(),
-    );
-    assert!(zeros[0] > lo && zeros[0] < hi,
-        "first zero out of expected range");
 }
 
 /// CcmParams for the Sliwiński regime (κ = N = λ = 50). Pure metadata
@@ -77,23 +93,27 @@ fn sliwinski_regime_params() {
 /// HP prolate compute_k_lambda should run at small λ without panicking.
 /// This mirrors the cmd_prolate_compare HP path that Claim 1 exercises
 /// at HP-1000 on Vast.
+#[cfg(feature = "hp")]
 #[test]
 fn prolate_runs_at_small_lambda_hp() {
     let prec_bits: u32 = 256;
     // λ = √13 in HP. Parse from a decimal string so there's no f64
     // round-trip (the literal 3.605551275463989_f64 would discard the
     // tail of √13 — irrelevant at 256 bits but principle matters).
-    let lambda = rug::Float::with_val(
-        prec_bits,
-        rug::Float::parse("3.605551275463989").unwrap(),
-    );
+    let lambda = rug::Float::with_val(prec_bits, rug::Float::parse("3.605551275463989").unwrap());
     let result = xc_spectral::prolate::hp::compute_k_lambda(
-        &lambda, 201, 32, prec_bits,
+        &lambda,
+        201,
+        32,
+        prec_bits,
         xc_numerics::quadrature::CacheMode::Off,
-    ).unwrap();
+    )
+    .unwrap();
     assert_eq!(result.k_values.len(), 32);
     // h_0 eigenvalue should be positive in HP.
     let zero_hp = rug::Float::with_val(prec_bits, 0);
-    assert!(result.eigenvalue_0 > zero_hp,
-        "h_0 eigenvalue should be positive");
+    assert!(
+        result.eigenvalue_0 > zero_hp,
+        "h_0 eigenvalue should be positive"
+    );
 }
