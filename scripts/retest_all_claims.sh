@@ -1,9 +1,7 @@
 #!/usr/bin/env bash
-# Full HP-1000 retest cycle for all 3 Paper B claims.
+# Full HP-1000 retest cycle for every Paper 2 claim table.
 #
-# Each claim computes ξ_λ on demand via the CCM construction; the
-# toolkit manages the weil_eigvec cache transparently (no paper-local
-# ξ files, no save-xi precondition step). Each claim can also be run
+# Each claim uses the toolkit-managed artifact fabric and can also be run
 # individually via its own script:
 #   scripts/claim1_lemma72_falsification.sh  (CCM Lemma 7.2 falsification)
 #   scripts/claim2_sliwinski_conjecture.sh   (Śliwiński Conjecture 4.1)
@@ -17,6 +15,8 @@ echo "Toolkit: $(grep '^xc-spectral' Cargo.toml)"
 echo "Started: $(date)"
 echo
 
+RETEST_ARGS=("$@")
+
 run_step() {
   local name=$1
   local script=$2
@@ -24,7 +24,7 @@ run_step() {
   echo "  $name"
   echo "================================================================"
   echo "Started: $(date)"
-  bash "$script"
+  bash "$script" "${RETEST_ARGS[@]}"
   echo "Finished: $(date)"
   echo
 }

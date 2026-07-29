@@ -1,7 +1,3 @@
-# Treat the canonical reference data as binary so its SHA-256 hash is
-# stable across platforms. Without this, Windows clients with autocrlf
-# would change LF to CRLF on checkout and break hash verification.
-data/*.json -text
 *.pdf binary
 
 # Shell scripts must be checked out with LF line endings, even on Windows,
