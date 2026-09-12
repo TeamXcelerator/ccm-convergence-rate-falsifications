@@ -1,59 +1,53 @@
 #!/usr/bin/env bash
-# Shared zero-configuration launcher for independently runnable Paper 2 claims.
-
+# Shared launcher. Each invocation keeps an independent journal and net summary.
 CLAIM_REPO_ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 cd "$CLAIM_REPO_ROOT"
 
-NUMERICAL_PROFILE=${NUMERICAL_PROFILE:-paper}
-
 claim_init() {
-  while (($# > 0)); do
-    case "$1" in
-      --numerical-profile)
-        if (($# < 2)); then
-          echo "--numerical-profile requires paper or current" >&2
-          exit 2
-        fi
-        NUMERICAL_PROFILE=$2
-        shift 2
-        ;;
-      --help|-h)
-        echo "Usage: bash ${BASH_SOURCE[1]} [--numerical-profile paper|current]"
-        echo "  paper   original adaptive-even/legacy-solver route with the current precision contract (default)"
-        echo "  current optimized even-sector/Auto toolkit route"
-        exit 0
-        ;;
-      *)
-        echo "Unknown claim-script argument: $1" >&2
-        echo "Use --help for supported options." >&2
-        exit 2
-        ;;
-    esac
-  done
-
-  case "$NUMERICAL_PROFILE" in
-    paper|current)
-      ;;
-    *)
-      echo "NUMERICAL_PROFILE must be paper or current" >&2
-      exit 2
-      ;;
-  esac
-
-  if [[ -z "${BIN+x}" ]]; then
+  CLAIM_ARGS=("$@")
+  if [[ ${1:-} == --help || ${1:-} == -h ]]; then
+    echo "Usage: bash ${BASH_SOURCE[1]} [binary options for this experiment]"
+    echo 'Defaults: current numerical profile, independent roots, Ultra capture.'
+    echo 'Options override script defaults. BIN selects a prebuilt executable.'
+    echo 'CLAIM_RUN_ROOT selects the journal parent. Existing runs are preserved.'
+    return 0
+  fi
+  if [[ -z ${BIN+x} ]]; then
     CLAIM_TARGET_DIR=${CARGO_TARGET_DIR:-"$CLAIM_REPO_ROOT/target"}
     BIN="$CLAIM_TARGET_DIR/release/ccm-falsifications"
-    cargo build --quiet --release --features hp --locked \
-      --bin ccm-falsifications \
-      --target-dir "$CLAIM_TARGET_DIR"
-  elif [[ ! -x "$BIN" ]]; then
-    echo "Configured reproduction binary is not executable: $BIN" >&2
-    exit 1
+    cargo build --quiet --release --features hp --locked --bin ccm-falsifications --target-dir "$CLAIM_TARGET_DIR"
   fi
-
-  echo "Numerical profile: $NUMERICAL_PROFILE"
+  [[ -x $BIN ]] || { echo "Binary is not executable: $BIN" >&2; exit 2; }
+  [[ $("$BIN" --version) == 'ccm-falsifications 2.1.0' ]] || { echo 'Wrong harness version; rebuild the locked source.' >&2; exit 2; }
 }
 
 claim_run() {
-  "$BIN" --numerical-profile "$NUMERICAL_PROFILE" "$@"
+  if [[ ${CLAIM_ARGS[0]:-} == --help || ${CLAIM_ARGS[0]:-} == -h ]]; then
+    if [[ -n ${BIN:-} && -x $BIN ]]; then "$BIN" "$1" --help; fi
+    return 0
+  fi
+  local parent=${CLAIM_RUN_ROOT:-"$CLAIM_REPO_ROOT/claim-runs"}
+  local output arg next=0
+  # Explicit capture-output remains supported; unique invocation folder prevents mixing.
+  for arg in "${CLAIM_ARGS[@]}"; do
+    if ((next)); then parent=$arg; next=0; fi
+    case "$arg" in --capture-output) next=1 ;; --capture-output=*) parent=${arg#*=} ;; esac
+  done
+  mkdir -p "$parent"
+  output=$(mktemp -d "$parent/claim-$(date -u +%Y%m%dT%H%M%SZ)-XXXXXX")
+  local -a statuses
+  set +e
+  "$BIN" --numerical-profile "${NUMERICAL_PROFILE:-current}" \
+    --root-acquisition "${ROOT_ACQUISITION:-independent}" \
+    --research-capture "${RESEARCH_CAPTURE:-ultra}" "$@" "${CLAIM_ARGS[@]}" \
+    --capture-output "$output" 2>&1 | tee "$output/invocation.log"
+  statuses=("${PIPESTATUS[@]}")
+  set -e
+  local summary_rc=0
+  python3 "$CLAIM_REPO_ROOT/scripts/summarize_runs.py" "$output" --output "$output/assessment.json" || summary_rc=$?
+  echo "Measurements and summary: $output"
+  if ((statuses[0] || statuses[1] || summary_rc)); then
+    echo '[INCOMPLETE] invocation, logging or evidence validation failed; all available output retained.' >&2
+    return 1
+  fi
 }

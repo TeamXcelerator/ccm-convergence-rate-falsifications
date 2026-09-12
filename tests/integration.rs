@@ -44,9 +44,16 @@ fn claim_script_inventory_is_complete() {
         "scripts/claim1d_lambda1000_grid8001.sh",
         "scripts/claim2_standard_ccm.sh",
         "scripts/claim2a_kappa50.sh",
+        "scripts/claim2b_kappa100.sh",
+        "scripts/claim2c_kappa150.sh",
+        "scripts/claim2d_kappa200.sh",
+        "scripts/claim2e_kappa300.sh",
+        "scripts/claim2f_kappa400.sh",
         "scripts/claim2g_kappa500.sh",
         "scripts/claim3a_lambda13_weighted.sh",
         "scripts/claim3b_lambda100_naive.sh",
+        "scripts/probe_mellin_c13_naive.sh",
+        "scripts/probe_indexed_c13.sh",
     ] {
         assert!(
             std::path::Path::new(relative).is_file(),
@@ -97,10 +104,8 @@ fn sliwinski_regime_params() {
 #[test]
 fn prolate_runs_at_small_lambda_hp() {
     let prec_bits: u32 = 256;
-    // λ = √13 in HP. Parse from a decimal string so there's no f64
-    // round-trip (the literal 3.605551275463989_f64 would discard the
-    // tail of √13 — irrelevant at 256 bits but principle matters).
-    let lambda = rug::Float::with_val(prec_bits, rug::Float::parse("3.605551275463989").unwrap());
+    // Construct the cutoff at the requested precision.
+    let lambda = rug::Float::with_val(prec_bits, 13).sqrt();
     let result = xc_spectral::prolate::hp::compute_k_lambda(
         &lambda,
         201,

@@ -5,7 +5,7 @@ set -euo pipefail
 source "$(dirname "$0")/claim_common.sh"
 claim_init "$@"
 
-echo "=== Claim 1c: Lemma 7.2, λ²=100, N=500, grid=8001 ==="
+echo "=== Claim 1c: Weil/prolate approximation, λ²=100, N=500, grid=8001 ==="
 claim_run prolate-compare \
   --lambda-sq 100 \
   --n-modes 500 \

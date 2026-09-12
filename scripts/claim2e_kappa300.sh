@@ -14,7 +14,7 @@ echo "=== Claim 2e: κ = N = λ = 300 at HP-${PREC} ==="
 echo
 
 claim_run sliwinski-check \
-  --lambdas "300" \
+  --lambda-squares "90000" \
   --n-values "300" \
   --precision-digits "$PREC" \
   --trim-edge-fraction "$TRIM"
