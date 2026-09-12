@@ -5,7 +5,7 @@ and complex Mellin-transform residuals for the Connes–Consani–Moscovici
 construction.
 
 **Harness v2.1.0 · Xcelerator Toolkit v0.15.0**, pinned to
-`2bea90ec7cb23d4d615448c293c8af0f94e14119` through Cargo.toml and Cargo.lock.
+`545041c192cb5a8b78a7dd34c53f93c8bd40681a` through Cargo.toml and Cargo.lock.
 
 The historical [manuscript source](paper.tex) and [PDF](paper.pdf) remain
 available. Their substantive interpretations are under author review; this
@@ -16,10 +16,11 @@ Weil/prolate comparison does **not** test CCM Lemma 7.2. See the
 ## Run one experiment
 
 Use Rust 1.98 or later and Linux/WSL for the MPFR/GMP high-precision tier.
-On Ubuntu, install `build-essential m4 libgmp-dev libmpfr-dev libmpc-dev`.
+On Ubuntu, install `build-essential m4 libgmp-dev libmpfr-dev libmpc-dev libflint-dev pkg-config`
+(FLINT 3 or newer).
 
 ```bash
-cargo build --release --features hp --locked
+cargo build --release --features arb --locked
 bash scripts/probe_mellin_c13_naive.sh
 ```
 
@@ -32,7 +33,9 @@ bash scripts/probe_indexed_c13.sh
 Scripts default to the current even-sector solver, independent root discovery,
 and Ultra research capture. All configurations, measurements and status reasons
 are retained in new run directories. A supplied `BIN` skips rebuilding; the
-launcher checks the harness version. Target-dependent diagnostics require an
+launcher checks the exact source/lock digest, toolkit pin and full-range root
+capability. Missing FLINT prerequisites are reported before compilation.
+Target-dependent diagnostics require an
 on-disk target specification through `XC_TARGET_SPEC_FILE`.
 
 The [retest guide](docs/RETESTING.md) lists every individual claim, controlled
@@ -63,9 +66,10 @@ themselves establish interval certification or an asymptotic theorem.
 ## Local validation
 
 ```bash
+python3 -m unittest discover -s tests -p 'test_*.py' -v
 cargo test --locked
-cargo test --locked --features hp
-cargo clippy --locked --all-targets --features hp -- -D warnings
+cargo test --locked --features arb
+cargo clippy --locked --all-targets --features arb -- -D warnings
 ```
 
 Default tests run on Windows too; numerical experiment execution requires HP.

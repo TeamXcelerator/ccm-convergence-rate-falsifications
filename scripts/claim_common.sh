@@ -13,12 +13,18 @@ claim_init() {
     return 0
   fi
   if [[ -z ${BIN+x} ]]; then
+    if ! command -v pkg-config >/dev/null || ! pkg-config --atleast-version=3 flint; then
+      echo '[INCOMPLETE] Complete root discovery requires FLINT 3 or newer.' >&2
+      echo 'On Ubuntu 24.04: apt-get install libflint-dev pkg-config' >&2
+      exit 2
+    fi
     CLAIM_TARGET_DIR=${CARGO_TARGET_DIR:-"$CLAIM_REPO_ROOT/target"}
     BIN="$CLAIM_TARGET_DIR/release/ccm-falsifications"
-    cargo build --quiet --release --features hp --locked --bin ccm-falsifications --target-dir "$CLAIM_TARGET_DIR"
+    cargo build --quiet --release --features arb --locked --bin ccm-falsifications --target-dir "$CLAIM_TARGET_DIR"
   fi
   [[ -x $BIN ]] || { echo "Binary is not executable: $BIN" >&2; exit 2; }
   [[ $("$BIN" --version) == 'ccm-falsifications 2.1.0' ]] || { echo 'Wrong harness version; rebuild the locked source.' >&2; exit 2; }
+  python3 "$CLAIM_REPO_ROOT/scripts/check_binary.py" "$CLAIM_REPO_ROOT" "$BIN"
 }
 
 claim_run() {

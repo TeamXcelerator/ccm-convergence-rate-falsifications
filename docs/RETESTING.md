@@ -1,14 +1,14 @@
 # Retesting Paper 2
 
 The v2.1.0 harness pins Toolkit v0.15.0 at
-`2bea90ec7cb23d4d615448c293c8af0f94e14119`. The manuscript remains the
+`545041c192cb5a8b78a7dd34c53f93c8bd40681a`. The manuscript remains the
 historical v2.0 text pending author review. Harness validation is not a
 completed rerun of the manuscript tables.
 
 ## Start with individual experiments
 
 ```bash
-cargo build --release --features hp --locked
+cargo build --release --features arb --locked
 bash scripts/probe_mellin_c13_naive.sh
 bash scripts/probe_indexed_c13.sh
 ```
@@ -41,6 +41,33 @@ configuration, for example:
 ```bash
 bash scripts/claim2_standard_ccm.sh --lambda-squares 13 --n-values 120
 ```
+
+## Complete spectral windows
+
+Independent spectral claims now isolate all positive movable roots of the
+exact retained even point source, including roots above its largest pole.
+The original pole-span scanner could return an incomplete window even when
+the missing roots existed. It remains available to other Toolkit callers;
+Paper 2's individual spectral scripts select complete-range acquisition.
+No reference zeros enter this acquisition. Adaptive root-refinement precision
+handles cancellation without changing the matrix/eigenstate precision.
+
+The ordinary launcher builds the `arb` feature. On Ubuntu/WSL, install its
+native dependency once before running a claim:
+
+```bash
+sudo apt-get update
+sudo apt-get install -y libflint-dev pkg-config
+```
+
+FLINT 3 or newer is required. A build without Arb rejects the independent
+spectral request before matrix work. Insufficient real-root counts, repeated
+roots, non-even sources and unsuccessful refinement remain explicit failures
+or incomplete results; they are never filled using reference ordinates.
+Complete-range root artifacts have distinct identities. Compatible matrices,
+eigenstates and source-only diagnostics remain reusable. Existing journals
+and incomplete root artifacts are preserved; run the usual individual script
+to produce a new qualified result from the retained source.
 
 ## Controlled comparisons
 

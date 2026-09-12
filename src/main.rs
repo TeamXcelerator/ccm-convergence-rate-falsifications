@@ -13,8 +13,7 @@ mod numerics;
 mod source;
 #[cfg(feature = "hp")]
 mod transforms;
-#[cfg(any(feature = "hp", test))]
-const TOOLKIT_REVISION: &str = "2bea90ec7cb23d4d615448c293c8af0f94e14119";
+const TOOLKIT_REVISION: &str = "545041c192cb5a8b78a7dd34c53f93c8bd40681a";
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq, ValueEnum, Serialize)]
 #[serde(rename_all = "kebab-case")]
@@ -205,6 +204,20 @@ fn configurations(
         .collect()
 }
 fn main() -> Result<()> {
+    // A side-effect-free build handshake lets launchers reject stale binaries
+    // even when a release was amended without changing its version number.
+    let arguments = std::env::args_os().collect::<Vec<_>>();
+    if arguments.len() == 2 && arguments[1] == "--build-info" {
+        #[cfg(feature = "hp")]
+        let digest = Some(journal::implementation_digest().0);
+        #[cfg(not(feature = "hp"))]
+        let digest: Option<String> = None;
+        println!(
+            "{}",
+            serde_json::json!({"schema_version":1,"version":env!("CARGO_PKG_VERSION"),"toolkit_revision":TOOLKIT_REVISION,"implementation_digest":digest,"complete_positive_roots":cfg!(feature="arb")})
+        );
+        return Ok(());
+    }
     let cli = Cli::parse();
     validate(&cli)?;
     #[cfg(not(feature = "hp"))]
@@ -214,6 +227,13 @@ fn main() -> Result<()> {
     }
     #[cfg(feature = "hp")]
     {
+        // Fail before cache initialization or matrix work if the build cannot
+        // honor ordinary full-range independent spectral requests.
+        ensure!(
+            cfg!(feature = "arb") || cli.common.root_acquisition != RootAcquisition::Independent
+                || !matches!(cli.command, Command::SliwinskiCheck { .. }),
+            "independent spectral claims require complete-range discovery; build with cargo build --release --features arb --locked (FLINT development library required)"
+        );
         let mut successful = true;
         match &cli.command {
             Command::SliwinskiCheck {

@@ -2,6 +2,8 @@
 
 Run scripts from any directory. Every script locates this repository, uses
 its own `ccm-falsifications` executable and writes a fresh run directory.
+The launcher verifies the exact source/lock digest and complete-root capability,
+including for a supplied `BIN`.
 None calls another paper's runner or modifies another paper's checkout.
 
 | Group | Individual scripts |

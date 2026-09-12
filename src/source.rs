@@ -58,13 +58,22 @@ where
                 "require C>=2, 2<=N<=8192 and 20<=precision-digits<=100000"
             );
             let params = CcmParams::from_lambda_sq_integer(c, n);
-            let cfg = config(p, args.numerical_profile, count);
+            let mut cfg = config(p, args.numerical_profile, count);
+            let complete_positive = matches!(command, Command::SliwinskiCheck { .. })
+                && args.root_acquisition == RootAcquisition::Independent;
+            if complete_positive {
+                cfg.root_precision_policy = ccm::hp::RootPrecisionPolicy::Adaptive;
+            }
             let value = match args.root_acquisition {
                 RootAcquisition::Independent => RetainedCcmRun::independent(
                     &params,
                     &cfg,
                     &ccm::window::ZeroTarget::FirstK { count },
-                    ccm::hp::IndependentRootDiscoveryOptions::advanced(false, true),
+                    if complete_positive {
+                        ccm::hp::IndependentRootDiscoveryOptions::complete_positive(true)
+                    } else {
+                        ccm::hp::IndependentRootDiscoveryOptions::advanced(false, true)
+                    },
                     &cache,
                 )?,
                 RootAcquisition::Seeded => {

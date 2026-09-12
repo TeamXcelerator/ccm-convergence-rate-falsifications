@@ -349,12 +349,18 @@ pub fn spectral(
             },
         );
     }
+    m.values["root_discovery_policy"] =
+        json!(if args.root_acquisition == RootAcquisition::Independent {
+            "complete_positive_even_point_numerator_flint_arb_adaptive_refinement_v1"
+        } else {
+            "explicit_reference_seeded_refinement"
+        });
     m.check(
         "independent ordinal assurance",
         "hypothesis",
         Status::Unassessed,
         if args.root_acquisition == RootAcquisition::Independent {
-            "reference-free finite-window discovery; exact count certification remains separate"
+            "all positive movable-root seeds isolated from the exact even point-source numerator; this is not a full Fourier/determinant ordinal certificate"
         } else {
             "reference-seeded labels do not establish counted spectral ordinals"
         },
