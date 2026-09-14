@@ -24,12 +24,12 @@ rayon = "1.10"
 rug = { version = "1.30", optional = true, default-features = false, features = ["float", "integer"] }
 
 # Xcelerator Toolkit: immutable revision recorded in Cargo.toml and Cargo.lock.
-xc-cache    = { git = "https://github.com/TeamXcelerator/xcelerator-toolkit", rev = "545041c192cb5a8b78a7dd34c53f93c8bd40681a" }
-xc-spectral = { git = "https://github.com/TeamXcelerator/xcelerator-toolkit", rev = "545041c192cb5a8b78a7dd34c53f93c8bd40681a" }
-xc-zeta     = { git = "https://github.com/TeamXcelerator/xcelerator-toolkit", rev = "545041c192cb5a8b78a7dd34c53f93c8bd40681a" }
-xc-numerics = { git = "https://github.com/TeamXcelerator/xcelerator-toolkit", rev = "545041c192cb5a8b78a7dd34c53f93c8bd40681a" }
+xc-cache    = { git = "https://github.com/TeamXcelerator/xcelerator-toolkit", rev = "5d50b5b862b075a43e7c2c9ccedd29b568a32808" }
+xc-spectral = { git = "https://github.com/TeamXcelerator/xcelerator-toolkit", rev = "5d50b5b862b075a43e7c2c9ccedd29b568a32808" }
+xc-zeta     = { git = "https://github.com/TeamXcelerator/xcelerator-toolkit", rev = "5d50b5b862b075a43e7c2c9ccedd29b568a32808" }
+xc-numerics = { git = "https://github.com/TeamXcelerator/xcelerator-toolkit", rev = "5d50b5b862b075a43e7c2c9ccedd29b568a32808" }
 
-xc-core = { git = "https://github.com/TeamXcelerator/xcelerator-toolkit", rev = "545041c192cb5a8b78a7dd34c53f93c8bd40681a" }
+xc-core = { git = "https://github.com/TeamXcelerator/xcelerator-toolkit", rev = "5d50b5b862b075a43e7c2c9ccedd29b568a32808" }
 
 [profile.release]
 opt-level = 3

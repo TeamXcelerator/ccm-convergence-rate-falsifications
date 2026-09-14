@@ -140,7 +140,7 @@ mod tests {
     #[test]
     fn journals_never_overwrite_evidence() {
         let root = std::env::temp_dir().join(format!(
-            "paper2-journal-{}-{}",
+            "ccm-experiment-journal-{}-{}",
             std::process::id(),
             SystemTime::now()
                 .duration_since(UNIX_EPOCH)

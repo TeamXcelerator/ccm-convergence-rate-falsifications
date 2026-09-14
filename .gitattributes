@@ -9,3 +9,12 @@
 *.toml text
 *.md text
 *.lock text
+
+# Keep documentation, validation records and Python tools portable.
+*.py text eol=lf
+.gitattributes text eol=lf
+.gitignore text eol=lf
+README.md text eol=lf
+docs/*.md text eol=lf
+docs/validation/*.json text eol=lf
+scripts/README.md text eol=lf

@@ -99,7 +99,7 @@ where
             measurement.source_manifests.extend(run.primary_sources());
         }
         journal.save("measurements.json", &measurement)?;
-        // Existing generic research artifacts retain Paper 2's complete data
+        // Existing generic research artifacts retain the complete experiment data
         // without inventing unregistered artifact types or requiring log parsing.
         let receipt = xc_cache::capture_and_persist(
             &json!({"semantics":"paper2-finite-measurements-v1","implementation_digest":crate::journal::implementation_digest(),"source_identities":measurement.source_manifests.iter().map(|m|json!({"key":m.key,"content_digest":m.content_digest})).collect::<Vec<_>>(),"command":command,"resolved_C_N_P_root_count":tuple,"numerical_profile":args.numerical_profile,"root_acquisition":args.root_acquisition,"toolkit_revision":crate::TOOLKIT_REVISION}),

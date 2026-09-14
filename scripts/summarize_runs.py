@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Summarize durable Paper 2 journals without recomputing any experiment."""
+"""Summarize saved convergence experiments without recomputing them."""
 import argparse
 import json
 from pathlib import Path

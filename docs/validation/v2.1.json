@@ -1,0 +1,111 @@
+{
+  "schema_version": 1,
+  "release": "v2.1",
+  "harness_version": "2.1.0",
+  "toolkit_version": "v0.15.0",
+  "toolkit_revision": "5d50b5b862b075a43e7c2c9ccedd29b568a32808",
+  "checked_at_utc": "2026-09-15T07:54:56.113673+00:00",
+  "scope": "Local software qualification; no full claim campaign or manuscript revalidation.",
+  "implementation_digest": "e0c11e2d05c701ab51d8de060ac88eadfbc8b2ef2a64ff0710c598395632bcf3",
+  "source_sha256_lf": {
+    "src/main.rs": "efe9eb409602933e6758b994d8db6dbe914c4a3a7744b30009c1b996406c60c4",
+    "src/journal.rs": "1dd79bf6c32c32dfed5c4c508eee1303360e5f05fd2900cd8400dc0387792ea2",
+    "src/source.rs": "ff6c34541160b7c4df1e537d5cb635a9e61f7513b25db976a862838765bfb388",
+    "src/experiments.rs": "b708d7a9e4a71aab41a36a6cd6def215f270adc92b6f2a5432de7e6663d0a41b",
+    "src/transforms.rs": "e6a45403c1f3831294d22b9a7fdc769d4164823dd5e38131b133857f2d314914",
+    "src/numerics.rs": "2dff1b562e3282c266240f7dcd3298a50a1dbadb31da28b5b506f43a709c18b2",
+    "Cargo.toml": "7105ac1a4ed35c8ea64a36a5d50d9cb3fd04f16ba3775c3b8b7c28b543a25628",
+    "Cargo.lock": "9073aa9d02651f752bc33de17ae9fa7187eea5e089433d30ab8a18162dfb638d",
+    "rust-toolchain.toml": "e33788b0b7fee22ee89c74de9a1b20b6ea12198fdcdf9be3306649c1182722c6",
+    "scripts/check_binary.py": "4c206273d85b5d1011adf95819026797f0c313f8f87f2dd1e1852317a12384ad",
+    "scripts/claim1a_lambda13_grid4001.sh": "ceacdb0c990b788392c5aabdeed31279145a59b436460405f5f00a37cd8e5f8c",
+    "scripts/claim1b_lambda100_grid4001.sh": "a984cbc7927e9111475ff9f529b3a2609cedaa5e214669b1147a0b9cc411dfaa",
+    "scripts/claim1c_lambda100_grid8001.sh": "03b5376397fac1ce46fc8855cac4efa2b695595fd67978b9ae2200ccf449a17c",
+    "scripts/claim1d_lambda1000_grid8001.sh": "bd6c839b8de5f0cb4adbf1a0174a77826ab23b1b4d1bd93c767f2fcaba0c780f",
+    "scripts/claim2_standard_ccm.sh": "84fe744a8e8f482f74d995fef70ab6451fbe06c6f144af69715e38370d6afa13",
+    "scripts/claim2a_kappa50.sh": "a1ae2d2ae50d4e6013a8f5f5b9638297542e44474f8b17bd70610867b1cfd2cb",
+    "scripts/claim2b_kappa100.sh": "d3a16e6734973a865d3a172cd7dd58e7ac71d2e70b6be5bec0baf06825b14d7d",
+    "scripts/claim2c_kappa150.sh": "a02826e1f051c26628606567f811b0b77e7088023183ea374cb2d18512e4a5a2",
+    "scripts/claim2d_kappa200.sh": "0749558f4566ef674ed1a85d3a3ab6e52eafe0709c9b7ace2183385b4bd1f373",
+    "scripts/claim2e_kappa300.sh": "450800112c4cdab4d47aebf0c591aae73967d8fc68ac7a4b6f8f79acf7488839",
+    "scripts/claim2f_kappa400.sh": "1af0f0d47c942085ff65ccccea81b52470cbe54970247c7cfce2dac6bdd4b6d2",
+    "scripts/claim2g_kappa500.sh": "15b85102a0b2b4ac1a6d96670ec578b54dfba00d2dcf7d56fcedd386ce33537d",
+    "scripts/claim3a_lambda13_weighted.sh": "71b042dc161f88f27d8ff8d4e8b5f967ffa57f25befe27a2419e27841854b0ea",
+    "scripts/claim3b_lambda100_naive.sh": "72cb2f15d1355b6a42cec073efccbb202729a1215f79443dce3692f07269fa26",
+    "scripts/claim_common.sh": "a6d56e0a1b39d8f669e20b6b9707f54d7621ad969542ef3a40fcfc9f2e4ec6a3",
+    "scripts/probe_indexed_c13.sh": "af223a64e1417992b41fccbf213837d67098ba7df4509c580213f767f2b75805",
+    "scripts/probe_mellin_c13_naive.sh": "54d65503640466bdcbc34afd8dca8dfc64fbf582835254b961e43229f049d904",
+    "scripts/summarize_runs.py": "2aba48ad56b31dc04fde45345d760ea78ffe0c3699d8fd705561821fe47ab9af",
+    "tests/integration.rs": "4135db064124f0e98df706d6feb58e06cb18ee32fa538abcd8615e5a1d03a2a5",
+    "tests/test_binary_contract.py": "53b1f93dca47effbda01279261851e10084e3b0b9511a436c72fab13f59aff01"
+  },
+  "checks": {
+    "windows_default_rust": {
+      "passed": 8,
+      "failed": 0,
+      "ignored": 0
+    },
+    "wsl_release_arb_rust": {
+      "passed": 17,
+      "failed": 0,
+      "ignored": 0
+    },
+    "python_executable_contract": {
+      "passed": 4,
+      "failed": 0
+    },
+    "strict_clippy_default_and_release_arb": "passed",
+    "rustfmt": "passed",
+    "shell_syntax": "passed",
+    "individual_launcher_help": {
+      "passed": 16,
+      "failed": 0
+    },
+    "existing_arb_executable_contract": "passed",
+    "local_markdown_links": {
+      "passed": 58,
+      "failed": 0
+    }
+  },
+  "environment": {
+    "native_rust": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+    "wsl_rust": "rustc 1.98.1 (48a229cea 2026-09-01)",
+    "wsl_distribution": "Ubuntu-24.04"
+  },
+  "evidence_log_sha256": {
+    "arb-build.log": "0b5fe2277fd2b29cc111b76604c482f8ec516047dbc0954657203c5614f4e4db",
+    "arb-clippy.log": "128036034437632ef4fdd50eeffed7ea3dc851b777c90bcb35c4c944045e7dcc",
+    "arb-tests.log": "16ecb6d8507ae680d7d55f20e50b9b237821b965eb9c106491dd33a2f97fe411",
+    "binary-contract.log": "e8f266e1a30e37de574a88732c9258bc94642a75c500b94a5acd1faa800b16a6",
+    "format.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "native-clippy.log": "820d231f3f48ff90152f7aa1c4700934d56e1c7b35dac813e841bff3481fb3be",
+    "native-tests.log": "3c36ebe4430e44116e675a017d878b8a00bf233ceecc4f1bb9703e1c45a278ed",
+    "python-tests.log": "1bb402be01d362ab4a1c42f1f1984f893e835f795347d7eac5a3233956117b0e",
+    "rustc-wsl.log": "2073de5abf149185c2f4d7473dc833bc921b99135560d24ae7b2293f33a9c376",
+    "script-help.log": "ad98e021d61d06dc475be392044dbc755ba29926f8c6267559eefb89ecc81b86"
+  },
+  "publication_transport_amendment": {
+    "toolkit_revision": "f903712ac87be591478a98eff50a6caff9a9bb16",
+    "scope": "Exact dependency pin, lockfile, embedded revision and current documentation updated. Full harness test and strict Clippy tiers repeated; four Python contract tests, binary source contract, formatting and shell syntax passed. Numerical claim scripts and manuscript are unchanged.",
+    "log_sha256": {
+      "ccm-publication-paper-native.log": "90067b3f723e6dd81122d8bf0a910ce613268e9aeadf0349a81cc62e7c56a1b9",
+      "ccm-publication-paper-hp.log": "6546d562341cc767d0accb4a043b332957eba898fc13ec603a172858ec13f838",
+      "ccm-publication-paper-native-clippy.log": "52d6e008a3c54dc0968cfc8571c747a857506ea622f597451683d0e64f122234",
+      "ccm-publication-paper-hp-clippy.log": "6075db225021a9f019ed9b9a895107c9177eb7e3548d4f8623369e29be7b6e4a",
+      "ccm-publication-paper-build.log": "1ff8bbcb4151dc887e69b78a29bc241d5062cba4757aa5f4639926ae712a8181"
+    },
+    "claim_rerun": false
+  },
+  "publication_recovery_amendment": {
+    "toolkit_revision": "5d50b5b862b075a43e7c2c9ccedd29b568a32808",
+    "scope": "Dependency and operational documentation update only; both complete harness suites, strict Clippy tiers, four Python tests, executable source contract, formatting and shell syntax passed. Manuscript and numerical claim scripts unchanged.",
+    "log_sha256": {
+      "recovery-native.log": "53b68bc89a0646dcf7c64235dc2c0865ade0c390a11d54cab199e97734fc7f04",
+      "recovery-hp.log": "1c57142aa943affd74ff3a6948b35d77528984eae5c142e73c20ab6b5eff6921",
+      "recovery-native-clippy.log": "40ae9a96530fb6b71864d1c971fc4584059ce689022bc062395d089db886c5f6",
+      "recovery-hp-clippy.log": "bde7f1770bf98878b5982c95cba3105186d8202659c69f5ef3d3fc37060dd470",
+      "recovery-python.log": "435ca37ad503f990746f35940a4e460bc14e326e18d3804477a8663e36d9410f"
+    },
+    "claim_rerun": false
+  }
+}

@@ -28,3 +28,15 @@ data/
 claim-runs/
 logs/
 __pycache__/
+
+# Managed local cache, validation output and timing sidecars.
+.xcelerator-cache/
+cache-validation/
+xcelerator-validation/
+.xcelerator-cache-validation/
+.xcelerator-validation/
+benchmark-results/
+*.benchmark.json
+performance-reports/
+*.performance.json
+*.py[cod]

@@ -1,8 +1,11 @@
-# Retesting Paper 2
+# Reproducing the convergence experiments
+
+[Repository overview](../README.md) · [Individual scripts](../scripts/README.md) ·
+[Research evidence](RESEARCH_EVIDENCE.md) · [Validation](VALIDATION.md)
 
 The v2.1.0 harness pins Toolkit v0.15.0 at
-`545041c192cb5a8b78a7dd34c53f93c8bd40681a`. The manuscript remains the
-historical v2.0 text pending author review. Harness validation is not a
+`5d50b5b862b075a43e7c2c9ccedd29b568a32808`. The manuscript remains the
+v2.0 edition. Software validation is not a
 completed rerun of the manuscript tables.
 
 ## Start with individual experiments
@@ -10,6 +13,11 @@ completed rerun of the manuscript tables.
 ```bash
 cargo build --release --features arb --locked
 bash scripts/probe_mellin_c13_naive.sh
+```
+
+After configuring the target file below, run the CCM control separately:
+
+```bash
 bash scripts/probe_indexed_c13.sh
 ```
 
@@ -42,13 +50,77 @@ configuration, for example:
 bash scripts/claim2_standard_ccm.sh --lambda-squares 13 --n-values 120
 ```
 
+## Directories and local cache
+
+Start in a checkout of this repository. The following optional setup keeps
+journals and reusable data together and selects local computation/reuse:
+
+```bash
+mkdir -p .xcelerator-local/claim-runs .xcelerator-cache
+export CLAIM_RUN_ROOT="$PWD/.xcelerator-local/claim-runs"
+export XC_CACHE_ROOT="$PWD/.xcelerator-cache"
+export XC_CACHE_REMOTE=none
+export XC_PUBLISH_TARGET=none
+export XC_PUBLISH_EXECUTE=false
+```
+
+These local directories are ignored by Git. Without `CLAIM_RUN_ROOT`, the
+launcher creates its journals under `claim-runs/`. An explicit
+`--capture-output /absolute/path/to/runs` selects a different parent. Each
+invocation still gets a unique subdirectory.
+
+For target-dependent capture, point to the JSON specification file defining
+the target for your experiment:
+
+```bash
+export XC_TARGET_SPEC_FILE=/absolute/path/to/runtime-target.json
+test -r "$XC_TARGET_SPEC_FILE"
+python3 -m json.tool "$XC_TARGET_SPEC_FILE" > /dev/null
+```
+
+Replace the example path with an existing file. The JSON check verifies syntax;
+the Toolkit validates the target schema and numerical definition during use.
+The file is an experiment input, not a directory or an inline formula.
+Do not substitute an arbitrary target when comparing an existing distance
+measurement. Missing or invalid target input affects the corresponding
+diagnostics and is reported in the capture outcomes.
+
+## Common overrides and direct CLI
+
+| Setting | Selection |
+|---|---|
+| Primary decimal precision | `PREC=2000 bash scripts/claim2f_kappa400.sh`, or `--precision-digits 2000` |
+| Worker pool | `RAYON_NUM_THREADS=8` before the command |
+| Existing executable | `BIN=/absolute/path/to/ccm-falsifications`; the source/lock contract must pass |
+| Script capture default | `RESEARCH_CAPTURE=ultra`, or explicit `--research-capture ultra` |
+| Numerical profile | `NUMERICAL_PROFILE=current`, or `--numerical-profile current` |
+| Root acquisition | `ROOT_ACQUISITION=independent`, or `--root-acquisition independent` |
+
+Command-line overrides take precedence. Use one individual script at a time;
+raising P or N can substantially increase work. A running executable keeps its
+original revision even if another checkout is updated.
+
+For direct CLI use, request capture explicitly (the executable defaults to
+`claim`, whereas the scripts default to `ultra`):
+
+```bash
+./target/release/ccm-falsifications --help
+./target/release/ccm-falsifications sliwinski-check --help
+./target/release/ccm-falsifications sliwinski-check \
+  --lambda-squares 13 --n-values 120 --precision-digits 1000 --root-count 20 \
+  --research-capture ultra --capture-output .xcelerator-local/direct-runs
+```
+
+Direct execution creates `run-*` journals under the specified parent. Pass
+that parent to `summarize_runs.py` to obtain an aggregate assessment.
+
 ## Complete spectral windows
 
 Independent spectral claims now isolate all positive movable roots of the
 exact retained even point source, including roots above its largest pole.
 The original pole-span scanner could return an incomplete window even when
 the missing roots existed. It remains available to other Toolkit callers;
-Paper 2's individual spectral scripts select complete-range acquisition.
+The individual spectral scripts select complete-range acquisition.
 No reference zeros enter this acquisition. Adaptive root-refinement precision
 handles cancellation without changing the matrix/eigenstate precision.
 
@@ -146,8 +218,8 @@ run has no CCM source and retains its complex measurements and both quadrature
 rules; CCM diagnostics are inapplicable.
 
 Target-dependent diagnostics require an on-disk specification selected by
-`XC_TARGET_SPEC_FILE`. A missing or invalid target is recorded, with its
-reason, without erasing the primary result. Historical adaptive-even sources
+`XC_TARGET_SPEC_FILE`; see [directory and input setup](#directories-and-local-cache).
+A missing or invalid target is recorded, with its reason, without erasing the primary result. Historical adaptive-even sources
 exclude the even-sector-only response and checkpoint-eigenstate exports.
 At C=1000, N=800, P=1000, the known source-resolution limitation excludes
 prime/u responses, prefix exports and target refinement; the prolate source
@@ -161,8 +233,31 @@ No interval-certified ordinal or asymptotic theorem is claimed by this harness.
 
 ## Computational changes
 
+Response capture uses the v0.15.0 performance amendment: fixed root quantities
+are prepared once, independent events and root batches run in parallel, and
+fresh output uses its completed producer checks plus an exact process-local
+payload seal. Cached responses retain numerical replay. Large response phases
+report event progress. Artifact formats and identities are unchanged; existing
+results need no flush or repair. A running executable continues to use its
+original revision. Complete-root isolation before root-window reuse remains a
+separate acquisition cost. See the Toolkit
+[performance and validation guide](https://github.com/TeamXcelerator/xcelerator-toolkit/blob/v0.15.0/docs/CCM_RESPONSE_PERFORMANCE.md).
+
 Fourier reconstruction uses a cosine recurrence. Mellin quadrature nodes,
 weights, amplitudes and Weil samples are computed once per quadrature order;
 frequency evaluations reuse them. Independent grid evaluations use Rayon.
 Set `RAYON_NUM_THREADS` to control workers; the resolved count and elapsed time
 are recorded. No unmeasured speedup factor is claimed.
+
+## Publication progress
+
+The pinned Toolkit reports batch sizes, existing bytes reused, elapsed push
+time and progress heartbeats during long Git operations. Its artifact push
+policy avoids delta searches on already-compressed archives. See the
+[Toolkit publication guide](https://github.com/TeamXcelerator/xcelerator-toolkit/blob/v0.15.0/docs/PUBLICATION_PERFORMANCE.md)
+for measured scope and recovery behavior. This transport amendment does not
+require recalculating completed experiments or clearing their caches. Preserve
+run journals and staging if publication is interrupted. An already-running
+executable continues using its original implementation until it exits.
+
+Large encoded artifacts can exceed the default workstation transfer ceiling. Set `XC_RESOURCE_POLICY_FILE` to an explicit resource policy appropriate to the machine; see the Toolkit [publication recovery guide](https://github.com/TeamXcelerator/xcelerator-toolkit/blob/v0.15.0/docs/PUBLICATION_RECOVERY.md). If packaging fails after local retention, recover the exact saved artifact without repeating the numerical claim. Preserve the original capture receipt and record recovery separately.

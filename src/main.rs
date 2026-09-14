@@ -13,7 +13,7 @@ mod numerics;
 mod source;
 #[cfg(feature = "hp")]
 mod transforms;
-const TOOLKIT_REVISION: &str = "545041c192cb5a8b78a7dd34c53f93c8bd40681a";
+const TOOLKIT_REVISION: &str = "5d50b5b862b075a43e7c2c9ccedd29b568a32808";
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq, ValueEnum, Serialize)]
 #[serde(rename_all = "kebab-case")]
