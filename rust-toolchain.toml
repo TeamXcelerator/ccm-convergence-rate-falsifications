@@ -1,0 +1,5 @@
+# Use stable Rust at or above the minimum version in Cargo.toml.
+# Record `rustc --version` when reporting a reproduction.
+[toolchain]
+channel = "stable"
+components = ["rustfmt", "clippy"]

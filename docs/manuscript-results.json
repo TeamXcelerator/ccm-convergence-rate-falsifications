@@ -1,0 +1,777 @@
+{
+    "schema_version":  1,
+    "manuscript":  "Convergence Claims for the CCM Construction: An Empirical Reassessment",
+    "revision_date":  "2026-11-03",
+    "status":  "v2.1 repository edition; Zenodo deposit maintained separately",
+    "scope":  "Empirical reassessment of the three original Paper 2 experiments, with independent interval checks of all seven saved kappa spectra and an analytic fixed-cutoff Mellin obstruction. No new claim campaign. Hashes bind evidence and do not replace mathematical hypotheses.",
+    "profile_scope":  "Least-squares replay of serialized samples from the finite-Dirichlet prolate model. No continuous-norm or regular-prolate certificate.",
+    "root_scope":  "Complete positive roots of exact saved secular sources. The rank-one determinant identity identifies them with the saved finite operator spectrum specified in the maximum-error definition. Analytic ground-state/source perturbation and asymptotic control remain open.",
+    "transform_scope":  "Observed real-part crossings fail the complex residual threshold. A separate endpoint proof establishes eventual absence of critical-line zeros for the tested fixed-cutoff naive and nonzero finite cosine-weighted transforms. No scan-completeness claim, off-line-zero exclusion, or growing-cutoff obstruction.",
+    "payload_availability":  "Full measurement payloads and independent audit records are retained separately and are not all bundled in the public source repository.",
+    "profile_comparisons":  [
+                                {
+                                    "experiment":  "1a",
+                                    "C":  13,
+                                    "N":  120,
+                                    "prolate_grid":  4001,
+                                    "sample_count":  1024,
+                                    "source_precision_bits":  3386,
+                                    "least_squares_scaled_relative_max":  "0.000068868102255151107013",
+                                    "measurement_payload_sha256":  "5d8f827012d7071edc859dcc0dec123a8f39774957ef56ea2382f978dcf5b6c2",
+                                    "manifest_digest":  "70f300deec25c71a6199e5163b3d9e36b230d55f949c457ef9885f8913624a48",
+                                    "toolkit_revision":  "2650ac8c04d55e489df40c59a687f5c6da6e4c10",
+                                    "implementation_digest":  "d70b747868b65c18ec5b12b6a8dff97627ec27dc0a3ed22088a3340a3ef1008b",
+                                    "exact_fit_check_sha256":  "e92471c2e0728ce54b45c112c45e6a1f5e298b57bffc741622e394ceeb7b3a65",
+                                    "earlier_reported_residual":  "6.887e-5",
+                                    "earlier_precision_digits":  1000
+                                },
+                                {
+                                    "experiment":  "1b",
+                                    "C":  100,
+                                    "N":  500,
+                                    "prolate_grid":  4001,
+                                    "sample_count":  1024,
+                                    "source_precision_bits":  3386,
+                                    "least_squares_scaled_relative_max":  "0.000671252769739197232048",
+                                    "measurement_payload_sha256":  "12aa71d793370e3c92723e3014517a0e8380b2b2293e79913ae953e0470583f8",
+                                    "manifest_digest":  "ef1f10d011a053891d83d4285b18f100f8d4085b466302c11f83207907b0e6c9",
+                                    "toolkit_revision":  "070b63e50805e926436bba41ad467ebaaab63a2a",
+                                    "implementation_digest":  "e32a1f772bcf76fcdcf5bda6336df355de647f6f80bd22b91254d8f26bafb165",
+                                    "exact_fit_check_sha256":  "0ed5f11eb5203c25346c05b96ab0b4ae522dd7da381eae3aa8dc561b26d7f6ae",
+                                    "earlier_reported_residual":  "6.697e-4",
+                                    "earlier_precision_digits":  1000
+                                },
+                                {
+                                    "experiment":  "1c",
+                                    "C":  100,
+                                    "N":  500,
+                                    "prolate_grid":  8001,
+                                    "sample_count":  1024,
+                                    "source_precision_bits":  3386,
+                                    "least_squares_scaled_relative_max":  "0.000646956953423094601378",
+                                    "measurement_payload_sha256":  "2457ebbab89ad0fe34fa8b5dfe6c61db38e8dfeaca8a9fa2842c8633efc523a2",
+                                    "manifest_digest":  "3346fcfa947f983ffe469c0a7f650d72bc1793c6b870704863ed4f73b7b689fd",
+                                    "toolkit_revision":  "6bcdaf0301c18f7fa0e6dc0e3469c3d290d4d12e",
+                                    "implementation_digest":  "49af8a21736c2d93323b39f4e46352e5d0f3088fa657948a3b32961c78d4256c",
+                                    "exact_fit_check_sha256":  "b5de7b662ec194255e922feb6ae857ad821652cfe1fa1fa2dd11d8447955f696",
+                                    "earlier_reported_residual":  "6.470e-4",
+                                    "earlier_precision_digits":  1000
+                                },
+                                {
+                                    "experiment":  "1d",
+                                    "C":  1000,
+                                    "N":  800,
+                                    "prolate_grid":  8001,
+                                    "sample_count":  1024,
+                                    "source_precision_bits":  6708,
+                                    "least_squares_scaled_relative_max":  "0.007081200484557787221501",
+                                    "measurement_payload_sha256":  "8bd1b8af87a9a0f0ff58626bfb8905f210ecb779461441b5d0a1606be3702725",
+                                    "manifest_digest":  "fbcd476af2a82387420811b2d3bb4d2b1716fac1f2a2177a260653cf5c5414e4",
+                                    "toolkit_revision":  "298a5d9865206251624303c0ebaee6c4997745cd",
+                                    "implementation_digest":  "04eb16a14017996d1fc29f60ba8749d7ca9e2706e510a74db39b6f41b401c63a",
+                                    "exact_fit_check_sha256":  "d72c01b9f44940fc1ba9d05186382d2a4475bf6a4fb465ca10c138c49a75423a",
+                                    "earlier_reported_residual":  "9.988e-1",
+                                    "earlier_precision_digits":  1000
+                                }
+                            ],
+    "audited_standard_roots":  [
+                                   {
+                                       "C":  13,
+                                       "N":  120,
+                                       "source_precision_bits":  3386,
+                                       "mean_absolute_error":  "26.6107965904301927600781",
+                                       "maximum_absolute_error":  "1862.70413386929239819192",
+                                       "measurement_sha256":  "9f0beb3b6109f26c072f81f50aac75ac9c94a58c7a1c51c83f53befbfea19167",
+                                       "matrix_audit_sha256":  "a498b118850097a0c1b08f91d77151fc7d357be095f564315386922029970b1f",
+                                       "root_audit_sha256":  "863f2c3fe0f1efac91817b54f055aa800edc782a9f1afd30aa42477f6b285694",
+                                       "complete_positive_point_source_root_set":  true,
+                                       "root_window_digest":  "fedd00d592642726a7891dd52287ed9e5fb0f3632a44bb55f29ae1557a5c7e69",
+                                       "root_weights_digest":  "b6d32a766c5c93fdccf86146107b6b35b5d2090e39e7d1d362c1b517da6e9548",
+                                       "earlier_reported_mean":  "1.063"
+                                   },
+                                   {
+                                       "C":  100,
+                                       "N":  500,
+                                       "source_precision_bits":  3386,
+                                       "mean_absolute_error":  "427.608789658429270080582",
+                                       "maximum_absolute_error":  "86620.9997614247123285687",
+                                       "measurement_sha256":  "d9b30e039ba4c3b41481fc02c7e8567aa458684bf83c7d6bfe72ceff3a9de7b0",
+                                       "matrix_audit_sha256":  "cb37e82fde06947322e839e3e731205b8c8e82d79ce599a0216e95a7596a4538",
+                                       "root_audit_sha256":  "2a36c675efdf039d266e0227b3815c0044e6559bfb01d88d3a3d8bc814568b4b",
+                                       "complete_positive_point_source_root_set":  true,
+                                       "root_window_digest":  "ec7152ee116147e1008a524e93b84a007cf17e78f97ccd24d558cbbf29ecf77b",
+                                       "root_weights_digest":  "39b620a59fc4e2594f932e7ffba492f83f852502ea90af4b9bdd8c61e841f8ac",
+                                       "earlier_reported_mean":  "1.595"
+                                   }
+                               ],
+    "auxiliary_transforms":  [
+                                 {
+                                     "experiment":  "3a",
+                                     "C":  13,
+                                     "transform":  "naive",
+                                     "observed_real_part_crossings":  21,
+                                     "failed_complex_residual_checks":  21,
+                                     "n_modes":  120,
+                                     "precision_digits":  1000,
+                                     "t_min":  5,
+                                     "t_max":  55,
+                                     "coarse_quadrature_order":  500,
+                                     "refined_quadrature_order":  1000,
+                                     "residual_tolerance":  "1e-20",
+                                     "scan_intervals":  5000,
+                                     "requested_refinement_digits":  30,
+                                     "root_count_assurance":  "sampled real-part crossings; no completeness certificate",
+                                     "measurement_sha256":  "58ff3d233359cf90ba900d08ed479d0df5a885ccd7596591c005cab0fb21e302",
+                                     "request_sha256":  "241f9e3dd0f05a45482555b3c1ef7fe00451da097137dac487c5eda9e328c860"
+                                 },
+                                 {
+                                     "experiment":  "3a",
+                                     "C":  13,
+                                     "transform":  "weighted",
+                                     "observed_real_part_crossings":  11,
+                                     "failed_complex_residual_checks":  11,
+                                     "n_modes":  120,
+                                     "precision_digits":  1000,
+                                     "t_min":  5,
+                                     "t_max":  55,
+                                     "coarse_quadrature_order":  500,
+                                     "refined_quadrature_order":  1000,
+                                     "residual_tolerance":  "1e-20",
+                                     "scan_intervals":  5000,
+                                     "requested_refinement_digits":  30,
+                                     "root_count_assurance":  "sampled real-part crossings; no completeness certificate",
+                                     "measurement_sha256":  "58ff3d233359cf90ba900d08ed479d0df5a885ccd7596591c005cab0fb21e302",
+                                     "request_sha256":  "241f9e3dd0f05a45482555b3c1ef7fe00451da097137dac487c5eda9e328c860"
+                                 },
+                                 {
+                                     "experiment":  "3b",
+                                     "C":  100,
+                                     "transform":  "naive",
+                                     "observed_real_part_crossings":  37,
+                                     "failed_complex_residual_checks":  37,
+                                     "n_modes":  500,
+                                     "precision_digits":  1000,
+                                     "t_min":  5,
+                                     "t_max":  55,
+                                     "coarse_quadrature_order":  500,
+                                     "refined_quadrature_order":  1000,
+                                     "residual_tolerance":  "1e-20",
+                                     "scan_intervals":  5000,
+                                     "requested_refinement_digits":  30,
+                                     "root_count_assurance":  "sampled real-part crossings; no completeness certificate",
+                                     "measurement_sha256":  "7f3886cb8b5ff6ff2b8cfc60dba6d0cda91a1128ffcc7f2f7e103c9a7fa5e6da",
+                                     "request_sha256":  "4351a166f200b7ad9d63c11da8a0e27d170cda166bb33eb92706aae19fe0c5e9"
+                                 }
+                             ],
+    "reference_zero_dataset_sha256":  "115889b81ba4a42bdb858ffb0167a8e1d0689c514a57192a3640784bd3bd26de",
+    "excluded_historical_inferences":  [
+                                           "Falsification of CCM Lemma 7.2",
+                                           "Asymptotic verdict from finite observations or a mean substituted for a maximum",
+                                           "Real-part crossings labeled as complex zeros",
+                                           "Universal finite-dimension boundary obstruction",
+                                           "Super-exponential rate inferred from linear matching-digit growth"
+                                       ],
+    "sweep_table_status":  "All seven current maximum-error rows independently checked: 1700 positive roots, pole-free sign-change brackets, degree-count completeness, and fresh error statistics. First five original journal error summaries replay exactly. Last two recovered from authenticated published state/source/root payloads; original journal summaries not replayed. Historical mean-based asymptotic verdict withdrawn.",
+    "empirical_position":  "Evidence against uniform inverse-logarithmic maximum-error decay in the tested range: all seven maxima grow, as do maxima excluding the highest 20 percent of roots. This finite adverse trend does not settle the asymptotic limit or certify analytic source errors.",
+    "kappa_maximum_error_comparisons":  [
+                                            {
+                                                "experiment":  "2a",
+                                                "kappa":  50,
+                                                "C":  2500,
+                                                "N":  50,
+                                                "precision_digits":  1000,
+                                                "source_precision_bits":  3386,
+                                                "interval_work_precision_bits":  10158,
+                                                "root_acquisition":  "independent",
+                                                "returned_root_count":  50,
+                                                "mean_absolute_error":  "141.849117212521018939746",
+                                                "maximum_absolute_error":  "3854.79562553106038922078",
+                                                "maximum_times_log_kappa":  "15080.0491683012891385279",
+                                                "maximum_index":  50,
+                                                "excluding_last_maximum":  "1106.20546984443573738268",
+                                                "first_80_percent_maximum":  "54.4129487903589021368869",
+                                                "first_half_maximum":  "8.43064815540534237811297e-6",
+                                                "first_10_maximum":  "3.30071789663388538248909e-60",
+                                                "original_journal_arithmetic_replayed":  true,
+                                                "evidence_origin":  "retained original journal and authenticated local artifacts",
+                                                "measurement_sha256":  "3c18218d0143f00ed4d1b0312907776d58eba1d904c7c2bf007adb0f2efa92f7",
+                                                "root_interval_audit_sha256":  "c4bd28f429de5dbabf41651b7b74ec05fa4b67ff72a45450588cdfa2553b4864",
+                                                "root_checker_sha256":  "331cdf05dd15b71a572102d45d373f97ec8284db6ff2b81087e0749d7e53ad3c",
+                                                "spectral_scope":  "Complete positive spectrum of the exact saved finite rank-one matrix, through the determinant identity. No analytic source perturbation or asymptotic certificate.",
+                                                "source_identities":  [
+                                                                          {
+                                                                              "kind":  "ccm_tau_matrix",
+                                                                              "content_digest":  "b6dfb2f2afe75ba5a2deda9de95d648fba480f295a5a27f423809ad217ea0556"
+                                                                          },
+                                                                          {
+                                                                              "kind":  "ccm_weil_eigenpair",
+                                                                              "content_digest":  "3772930130c36768fcf80442722f3900dd6df358bff88674ab85875e2b5ede6d"
+                                                                          },
+                                                                          {
+                                                                              "kind":  "ccm_secular_source",
+                                                                              "content_digest":  "0b260ef2be7475bfd317461985510fd93e89c99d2f956f1ef147ca91997b0fa4"
+                                                                          },
+                                                                          {
+                                                                              "kind":  "ccm_root_discovery_window",
+                                                                              "content_digest":  "897ae9516d2e15261d494b9305b607b6bbcddf1e8e26e022648f33caf73f0ebe"
+                                                                          }
+                                                                      ]
+                                            },
+                                            {
+                                                "experiment":  "2b",
+                                                "kappa":  100,
+                                                "C":  10000,
+                                                "N":  100,
+                                                "precision_digits":  1000,
+                                                "source_precision_bits":  3386,
+                                                "interval_work_precision_bits":  10158,
+                                                "root_acquisition":  "independent",
+                                                "returned_root_count":  100,
+                                                "mean_absolute_error":  "256.091580164778565830558",
+                                                "maximum_absolute_error":  "12035.9897836223174622615",
+                                                "maximum_times_log_kappa":  "55427.7813103947552887778",
+                                                "maximum_index":  100,
+                                                "excluding_last_maximum":  "3650.91112509039147929059",
+                                                "first_80_percent_maximum":  "87.9901864478482921695426",
+                                                "first_half_maximum":  "1.18524115918818541885912e-11",
+                                                "first_10_maximum":  "5.50988693633039845464882e-253",
+                                                "original_journal_arithmetic_replayed":  true,
+                                                "evidence_origin":  "retained original journal and authenticated local artifacts",
+                                                "measurement_sha256":  "fcac2bc413555e0f4bffce1cfbee2f9ea71bb7ee439589adb72ca77b00f2c353",
+                                                "root_interval_audit_sha256":  "f50c9af4bb4f4a0b96cf7292af09243a4f6467e8c8f6bcb79aa9985906945224",
+                                                "root_checker_sha256":  "331cdf05dd15b71a572102d45d373f97ec8284db6ff2b81087e0749d7e53ad3c",
+                                                "spectral_scope":  "Complete positive spectrum of the exact saved finite rank-one matrix, through the determinant identity. No analytic source perturbation or asymptotic certificate.",
+                                                "source_identities":  [
+                                                                          {
+                                                                              "kind":  "ccm_tau_matrix",
+                                                                              "content_digest":  "f3be7a78e17876cc9f20114574f067f573a598e2758c5618f920c937c6a436d6"
+                                                                          },
+                                                                          {
+                                                                              "kind":  "ccm_weil_eigenpair",
+                                                                              "content_digest":  "44722a064bfa1b63c7bc6bd246247cefbdbeb10272b470be4c92100bb9c1ed19"
+                                                                          },
+                                                                          {
+                                                                              "kind":  "ccm_secular_source",
+                                                                              "content_digest":  "a6d46dfc365844d7ca668e707aa3dcec6917b6e62238db1207ffeedf3d216c49"
+                                                                          },
+                                                                          {
+                                                                              "kind":  "ccm_root_discovery_window",
+                                                                              "content_digest":  "a0bcabb2810f8a9885c4ae539f651ee41ff37bd5b25d571d7e76312a59917a36"
+                                                                          }
+                                                                      ]
+                                            },
+                                            {
+                                                "experiment":  "2c",
+                                                "kappa":  150,
+                                                "C":  22500,
+                                                "N":  150,
+                                                "precision_digits":  1000,
+                                                "source_precision_bits":  3386,
+                                                "interval_work_precision_bits":  10158,
+                                                "root_acquisition":  "independent",
+                                                "returned_root_count":  150,
+                                                "mean_absolute_error":  "363.204166581994409979667",
+                                                "maximum_absolute_error":  "23689.1062143508457142395",
+                                                "maximum_times_log_kappa":  "118697.471683221289520341",
+                                                "maximum_index":  150,
+                                                "excluding_last_maximum":  "7324.96043834259825268249",
+                                                "first_80_percent_maximum":  "112.208412786297920938271",
+                                                "first_half_maximum":  "2.73438729607672453437841e-16",
+                                                "first_10_maximum":  "8.76102828724360698032958e-412",
+                                                "original_journal_arithmetic_replayed":  true,
+                                                "evidence_origin":  "retained original journal and authenticated local artifacts",
+                                                "measurement_sha256":  "01dfdafeea2eb6bc7f52d652674a52734c78a4216387774ce227b11779037df9",
+                                                "root_interval_audit_sha256":  "dade4ec1252b218db965420a20d7dd08c8b2fe7d7c724699da196b6dbb617c04",
+                                                "root_checker_sha256":  "331cdf05dd15b71a572102d45d373f97ec8284db6ff2b81087e0749d7e53ad3c",
+                                                "spectral_scope":  "Complete positive spectrum of the exact saved finite rank-one matrix, through the determinant identity. No analytic source perturbation or asymptotic certificate.",
+                                                "source_identities":  [
+                                                                          {
+                                                                              "kind":  "ccm_tau_matrix",
+                                                                              "content_digest":  "4459067da13538c68ccad9ecd0990905f8941f2574311cd6c44bbe0f53664c15"
+                                                                          },
+                                                                          {
+                                                                              "kind":  "ccm_weil_eigenpair",
+                                                                              "content_digest":  "c5b4fc1fd4b5c0c865a654f025ca48dc879b82d87589c20c10de27b74fe66ec0"
+                                                                          },
+                                                                          {
+                                                                              "kind":  "ccm_secular_source",
+                                                                              "content_digest":  "9120689128c797fe9289304188cb4f45ca7262ae52851444e2dd6663cf2a826e"
+                                                                          },
+                                                                          {
+                                                                              "kind":  "ccm_root_discovery_window",
+                                                                              "content_digest":  "bcf9aac64e6a055f81effd6544444102c6933a49793c23356422e4d9a38a2afa"
+                                                                          }
+                                                                      ]
+                                            },
+                                            {
+                                                "experiment":  "2d",
+                                                "kappa":  200,
+                                                "C":  40000,
+                                                "N":  200,
+                                                "precision_digits":  1000,
+                                                "source_precision_bits":  3386,
+                                                "interval_work_precision_bits":  10158,
+                                                "root_acquisition":  "independent",
+                                                "returned_root_count":  200,
+                                                "mean_absolute_error":  "469.138895509391655053431",
+                                                "maximum_absolute_error":  "38728.8547747787352558380",
+                                                "maximum_times_log_kappa":  "205197.763839727024705861",
+                                                "maximum_index":  200,
+                                                "excluding_last_maximum":  "12081.9953952924154124384",
+                                                "first_80_percent_maximum":  "134.727240810362812567371",
+                                                "first_half_maximum":  "2.83526274497291511140420e-22",
+                                                "first_10_maximum":  "2.38507076223555867501206e-562",
+                                                "original_journal_arithmetic_replayed":  true,
+                                                "evidence_origin":  "retained original journal and authenticated local artifacts",
+                                                "measurement_sha256":  "477df74ccaa688b174a292629cabcffed0f1b07080023f2eb3774ab6b07d2c45",
+                                                "root_interval_audit_sha256":  "f44b5b2f02909c787838a30250210eb2017e75492692277f8a7d63767d81d99d",
+                                                "root_checker_sha256":  "331cdf05dd15b71a572102d45d373f97ec8284db6ff2b81087e0749d7e53ad3c",
+                                                "spectral_scope":  "Complete positive spectrum of the exact saved finite rank-one matrix, through the determinant identity. No analytic source perturbation or asymptotic certificate.",
+                                                "source_identities":  [
+                                                                          {
+                                                                              "kind":  "ccm_tau_matrix",
+                                                                              "content_digest":  "2d5c7bb3f08765071cd49cd4e2542b8414fbb0264503bbdb454509c7c7e93778"
+                                                                          },
+                                                                          {
+                                                                              "kind":  "ccm_weil_eigenpair",
+                                                                              "content_digest":  "a8e6f3f63525d0a77600c4bea80a4c8cc6987f8ef51eb377ffa30b45b9bf9569"
+                                                                          },
+                                                                          {
+                                                                              "kind":  "ccm_secular_source",
+                                                                              "content_digest":  "ede1256b4b10545b3f86fe583ddaabd898d99d325fbfe7c6eaf47c76ce60ca40"
+                                                                          },
+                                                                          {
+                                                                              "kind":  "ccm_root_discovery_window",
+                                                                              "content_digest":  "af394e5b7d7b56e48848e710723588e9f3dedf3b604dae33642f759297d783c5"
+                                                                          }
+                                                                      ]
+                                            },
+                                            {
+                                                "experiment":  "2e",
+                                                "kappa":  300,
+                                                "C":  90000,
+                                                "N":  300,
+                                                "precision_digits":  1000,
+                                                "source_precision_bits":  3386,
+                                                "interval_work_precision_bits":  10158,
+                                                "root_acquisition":  "independent",
+                                                "returned_root_count":  300,
+                                                "mean_absolute_error":  "674.716074127176723904944",
+                                                "maximum_absolute_error":  "77721.5574309644189406653",
+                                                "maximum_times_log_kappa":  "443306.857177720285998204",
+                                                "maximum_index":  300,
+                                                "excluding_last_maximum":  "24485.9254436427671245345",
+                                                "first_80_percent_maximum":  "177.449124169663204685246",
+                                                "first_half_maximum":  "2.95647227140318007350554e-37",
+                                                "first_10_maximum":  "7.00471524121731629954859e-853",
+                                                "original_journal_arithmetic_replayed":  true,
+                                                "evidence_origin":  "retained original journal and authenticated local artifacts",
+                                                "measurement_sha256":  "54266da260e384bb8056c148fa31d47dffdbb51d3defd2f789fbe9eac00fd3d0",
+                                                "root_interval_audit_sha256":  "f4c716d01bbc3515d4a6087e16c5117bd750b97b9ca8cfeda374ed2ce7d029ec",
+                                                "root_checker_sha256":  "331cdf05dd15b71a572102d45d373f97ec8284db6ff2b81087e0749d7e53ad3c",
+                                                "spectral_scope":  "Complete positive spectrum of the exact saved finite rank-one matrix, through the determinant identity. No analytic source perturbation or asymptotic certificate.",
+                                                "source_identities":  [
+                                                                          {
+                                                                              "kind":  "ccm_tau_matrix",
+                                                                              "content_digest":  "35646a3b86d15106cd22d19109f0f5d5b9370f3a0337ba39ace181fb5bebd0fd"
+                                                                          },
+                                                                          {
+                                                                              "kind":  "ccm_weil_eigenpair",
+                                                                              "content_digest":  "31a3c72d8119ab9e7cf382175aed1efb90759de2dfe0d4e7f440939768f48076"
+                                                                          },
+                                                                          {
+                                                                              "kind":  "ccm_secular_source",
+                                                                              "content_digest":  "f703a84cda54eca74057193c1bc6ee03918d0169aa9b0fad8557b8a5ab86f1c7"
+                                                                          },
+                                                                          {
+                                                                              "kind":  "ccm_root_discovery_window",
+                                                                              "content_digest":  "76523d124dd66063f511ecc52b342571b11099137d5f4b6f800e69767958dd70"
+                                                                          }
+                                                                      ]
+                                            },
+                                            {
+                                                "experiment":  "2f",
+                                                "kappa":  400,
+                                                "C":  160000,
+                                                "N":  400,
+                                                "precision_digits":  2000,
+                                                "source_precision_bits":  6708,
+                                                "interval_work_precision_bits":  20124,
+                                                "root_acquisition":  "independent",
+                                                "returned_root_count":  400,
+                                                "mean_absolute_error":  "875.621430487236397565587",
+                                                "maximum_absolute_error":  "128071.105645415271274090",
+                                                "maximum_times_log_kappa":  "767333.488983426523379386",
+                                                "maximum_index":  400,
+                                                "excluding_last_maximum":  "40544.1597318547020103115",
+                                                "first_80_percent_maximum":  "216.408368787982279194709",
+                                                "first_half_maximum":  "2.39522807892846257877973e-51",
+                                                "first_10_maximum":  "1.42018390579480303587533e-1135",
+                                                "original_journal_arithmetic_replayed":  false,
+                                                "evidence_origin":  "authenticated published source/root chain; error statistics freshly recomputed",
+                                                "measurement_sha256":  null,
+                                                "root_interval_audit_sha256":  "ff59564b3ce7c5e0bb06802c693449998cdeacd995ffce6420b148dd099ba73e",
+                                                "root_checker_sha256":  "331cdf05dd15b71a572102d45d373f97ec8284db6ff2b81087e0749d7e53ad3c",
+                                                "spectral_scope":  "Complete positive spectrum of the exact saved finite rank-one matrix, through the determinant identity. No analytic source perturbation or asymptotic certificate.",
+                                                "source_identities":  [
+                                                                          {
+                                                                              "kind":  "ccm_weil_eigenpair",
+                                                                              "content_digest":  "04de3c3d2f7c5f072a901c8fa4f06d2e653a0d1aa621a978fff7dc1d187f56c6",
+                                                                              "manifest_digest":  "d50a11d90136b81976c1a93e6c30462348dfefa3791da366871e139616bfc0dd"
+                                                                          },
+                                                                          {
+                                                                              "kind":  "ccm_secular_source",
+                                                                              "content_digest":  "4acd49389c467a94adf4eade13f7ec966c583c58c99d5b26fd1119d76c21d2cf",
+                                                                              "manifest_digest":  "bc0b28f0898178dc5762059df8f71b70069924ae47ec29e2b2b2bc6e99291c04"
+                                                                          },
+                                                                          {
+                                                                              "kind":  "ccm_root_discovery_window",
+                                                                              "content_digest":  "130dd261990941e6ddeaa5828bf953e9020c12986a256043c445f116ad3466e4",
+                                                                              "manifest_digest":  "3f7dfd1eaa219160f983bf76b561a578cb7205a2f233560a3ec68ba7713c4e91"
+                                                                          }
+                                                                      ]
+                                            },
+                                            {
+                                                "experiment":  "2g",
+                                                "kappa":  500,
+                                                "C":  250000,
+                                                "N":  500,
+                                                "precision_digits":  1500,
+                                                "source_precision_bits":  5047,
+                                                "interval_work_precision_bits":  15141,
+                                                "root_acquisition":  "independent",
+                                                "returned_root_count":  500,
+                                                "mean_absolute_error":  "1074.03903100178279853278",
+                                                "maximum_absolute_error":  "189365.021032015473082807",
+                                                "maximum_times_log_kappa":  "1176829.39326345202450566",
+                                                "maximum_index":  500,
+                                                "excluding_last_maximum":  "60077.4123652321818501413",
+                                                "first_80_percent_maximum":  "254.014543179106964565781",
+                                                "first_half_maximum":  "2.48218941585221078497955e-69",
+                                                "first_10_maximum":  "8.78771494405792753412699e-1414",
+                                                "original_journal_arithmetic_replayed":  false,
+                                                "evidence_origin":  "authenticated published source/root chain; error statistics freshly recomputed",
+                                                "measurement_sha256":  null,
+                                                "root_interval_audit_sha256":  "d917c4a79d2faf70d92cfd2734692eb6aadd3cbfc6eb118d9421775afb4f80a7",
+                                                "root_checker_sha256":  "331cdf05dd15b71a572102d45d373f97ec8284db6ff2b81087e0749d7e53ad3c",
+                                                "spectral_scope":  "Complete positive spectrum of the exact saved finite rank-one matrix, through the determinant identity. No analytic source perturbation or asymptotic certificate.",
+                                                "source_identities":  [
+                                                                          {
+                                                                              "kind":  "ccm_weil_eigenpair",
+                                                                              "content_digest":  "221ed2716448e22b01e280300935fa408b6ce3ee2ceef52867160253338fb439",
+                                                                              "manifest_digest":  "01d6788e903cac29b70823b5df28f0868f9af7c9d88b3ce658860862dfba5a66"
+                                                                          },
+                                                                          {
+                                                                              "kind":  "ccm_secular_source",
+                                                                              "content_digest":  "59dae068fbdf47f7abed3d665977b73c486532f2f26224cac16331270879b1ac",
+                                                                              "manifest_digest":  "e1830bbdc31e71747643d8ddfe78d82aa21e94429c653d43791e50b418d2461b"
+                                                                          },
+                                                                          {
+                                                                              "kind":  "ccm_root_discovery_window",
+                                                                              "content_digest":  "69f07603ec86549e0ae3d411607613d259df96260b288506b6cd8743aeec7678",
+                                                                              "manifest_digest":  "96d388e96ec531c4c02767de3c09693b176c7f8e6a24d3777b7ab8bcbfd30344"
+                                                                          }
+                                                                      ]
+                                            }
+                                        ],
+    "mellin_boundary_proposition":  {
+                                        "status":  "analytic proof with independently checked directed endpoint bounds",
+                                        "classical_full_integral":  "Gamma(s+1)*(1-2^(1-s))*zeta(s), Re(s)\u003e0, with removable value at s=1",
+                                        "classical_source":  "https://dlmf.nist.gov/25.5.E4",
+                                        "boundary_inequality":  "|F_lambda(1/2+it)| \u003e= delta/|t| - B_lambda/t^2",
+                                        "q":  "q(x)=exp(3*x/2)*exp(-exp(x))/(1+exp(-exp(x)))^2; L=ln(lambda)",
+                                        "delta":  "|q(L)-q(-L)|",
+                                        "B_lambda":  "q(-L)*(3/2+1/lambda)+q(L)*(3/2+lambda)+111*sqrt(pi)/16",
+                                        "naive_bounds":  [
+                                                             {
+                                                                 "C":  13,
+                                                                 "delta_enclosure":  [
+                                                                                         "0.14049",
+                                                                                         "0.14050"
+                                                                                     ],
+                                                                 "B_over_delta_strict_upper_bound":  95,
+                                                                 "zero_free_for_abs_t_greater_than":  100
+                                                             },
+                                                             {
+                                                                 "C":  100,
+                                                                 "delta_enclosure":  [
+                                                                                         "0.006450",
+                                                                                         "0.006451"
+                                                                                     ],
+                                                                 "B_over_delta_strict_upper_bound":  1911,
+                                                                 "zero_free_for_abs_t_greater_than":  2000
+                                                             }
+                                                         ],
+                                        "weighted_scope":  "For either cutoff and each nonzero fixed finite cosine polynomial, the first nonzero endpoint derivative gives eventual absence of critical-line zeros. No weighted height threshold or uniform-in-N bound is claimed.",
+                                        "verification_precisions_bits":  [
+                                                                             256,
+                                                                             512
+                                                                         ],
+                                        "verifier":  "Independent Rust, rug 1.30.0 / MPFR directed arithmetic; no Toolkit dependency",
+                                        "endpoint_check_sha256":  "82fb2932ee98e8505059ae24f1a2c41aff2340e806af35e3e12d076927a4396b",
+                                        "verifier_source_sha256":  "2e4a158b7010aaa3c97856ce28e7c3b9d7e66912627c61bc8b95ee24f4d045a4",
+                                        "retained_audit":  "2026-11-03-paper2-mellin-boundary-audit",
+                                        "original_measurements_unchanged":  true
+                                    },
+    "substantive_expansion": {
+    "date":  "2026-11-03",
+    "scope":  "Local independent checks and short derivations for the existing three experiments; no new claim campaign",
+    "spectral_moment":  {
+                            "formula":  "M2 = trace(A^2)/2 = sum_(j=1)^N d_j^2 - (sum_(j=-N)^N w_j*d_j^2)/S",
+                            "error_bound":  "B_N \u003e= max(0, (sqrt(M2)-sqrt(sum_(k=1)^N gamma_k^2))/sqrt(N))",
+                            "source_scope":  "Exact saved even coefficients and rounded Fourier poles; analytic assembly and ground-state uncertainty not enclosed",
+                            "reference_scope":  "Pinned reference points rounded at each source precision; no new independent zeta-ordinate certification",
+                            "roots_used_in_lower_bound":  false,
+                            "separate_root_moment_consistency_check":  "Directed coefficient and squared-root-bracket enclosures overlap in all seven rows; this is a consistency check, not a replacement for root completeness",
+                            "checker_main_sha256":  "e641a14ff389eff544e010d8f761b82e161b27b0c1f86d18c3bf7990484a0f08",
+                            "checker_interval_sha256":  "9c7e399a31805b0269552ab441019c7fec305dcd4e5202429e0ad903f7602499",
+                            "checker_lock_sha256":  "61ac2150a2ecef429e80db50bfdd7c2203682aa64a3947fc9e37011cf774744d",
+                            "results_sha256":  "8006e7e7c0fba1cf60d7fd3bf9b0816133f2c9aa7b2ee9cded2465dd57641786",
+                            "reference_sha256":  "115889b81ba4a42bdb858ffb0167a8e1d0689c514a57192a3640784bd3bd26de",
+                            "rows":  [
+                                         {
+                                             "C":  2500,
+                                             "N":  50,
+                                             "claim":  "2a",
+                                             "maximum_error_conservative_lower_bound":  525,
+                                             "maximum_error_lower_bound_interval":  {
+                                                                                        "lower":  "525.03802745042004437623122570278",
+                                                                                        "upper":  "525.03802745042004437623122570279"
+                                                                                    },
+                                             "passed":  true,
+                                             "reference_second_moment":  {
+                                                                             "lower":  "448704.56373163991496812054570637",
+                                                                             "upper":  "448704.56373163991496812054570638"
+                                                                         },
+                                             "root_bracket_second_moment":  {
+                                                                                "lower":  "19205724.539504725538292717729481",
+                                                                                "upper":  "19205724.539504725538292717729482"
+                                                                            },
+                                             "root_trace_intervals_overlap":  true,
+                                             "scope":  "Exact saved coefficients and pinned reference points rounded at source precision; source-derived lower bound is independent of root values; no analytic source or asymptotic claim",
+                                             "source_precision_bits":  3386,
+                                             "source_second_moment":  {
+                                                                          "lower":  "19205724.539504725538292717729481",
+                                                                          "upper":  "19205724.539504725538292717729482"
+                                                                      },
+                                             "source_state_digest":  "3772930130c36768fcf80442722f3900dd6df358bff88674ab85875e2b5ede6d",
+                                             "work_precision_bits":  10414
+                                         },
+                                         {
+                                             "C":  10000,
+                                             "N":  100,
+                                             "claim":  "2b",
+                                             "maximum_error_conservative_lower_bound":  1196,
+                                             "maximum_error_lower_bound_interval":  {
+                                                                                        "lower":  "1196.2822812635621147204890488257",
+                                                                                        "upper":  "1196.2822812635621147204890488258"
+                                                                                    },
+                                             "passed":  true,
+                                             "reference_second_moment":  {
+                                                                             "lower":  "2323555.7111446106191511666364288",
+                                                                             "upper":  "2323555.7111446106191511666364289"
+                                                                         },
+                                             "root_bracket_second_moment":  {
+                                                                                "lower":  "181903058.84119274776141038924968",
+                                                                                "upper":  "181903058.84119274776141038924969"
+                                                                            },
+                                             "root_trace_intervals_overlap":  true,
+                                             "scope":  "Exact saved coefficients and pinned reference points rounded at source precision; source-derived lower bound is independent of root values; no analytic source or asymptotic claim",
+                                             "source_precision_bits":  3386,
+                                             "source_second_moment":  {
+                                                                          "lower":  "181903058.84119274776141038924968",
+                                                                          "upper":  "181903058.84119274776141038924969"
+                                                                      },
+                                             "source_state_digest":  "44722a064bfa1b63c7bc6bd246247cefbdbeb10272b470be4c92100bb9c1ed19",
+                                             "work_precision_bits":  10414
+                                         },
+                                         {
+                                             "C":  22500,
+                                             "N":  150,
+                                             "claim":  "2c",
+                                             "maximum_error_conservative_lower_bound":  1952,
+                                             "maximum_error_lower_bound_interval":  {
+                                                                                        "lower":  "1952.5687739652046257853560466353",
+                                                                                        "upper":  "1952.5687739652046257853560466354"
+                                                                                    },
+                                             "passed":  true,
+                                             "reference_second_moment":  {
+                                                                             "lower":  "6240650.5945589382326485310123855",
+                                                                             "upper":  "6240650.5945589382326485310123856"
+                                                                         },
+                                             "root_bracket_second_moment":  {
+                                                                                "lower":  "697599836.66107707530856864837365",
+                                                                                "upper":  "697599836.66107707530856864837366"
+                                                                            },
+                                             "root_trace_intervals_overlap":  true,
+                                             "scope":  "Exact saved coefficients and pinned reference points rounded at source precision; source-derived lower bound is independent of root values; no analytic source or asymptotic claim",
+                                             "source_precision_bits":  3386,
+                                             "source_second_moment":  {
+                                                                          "lower":  "697599836.66107707530856864837365",
+                                                                          "upper":  "697599836.66107707530856864837366"
+                                                                      },
+                                             "source_state_digest":  "c5b4fc1fd4b5c0c865a654f025ca48dc879b82d87589c20c10de27b74fe66ec0",
+                                             "work_precision_bits":  10414
+                                         },
+                                         {
+                                             "C":  40000,
+                                             "N":  200,
+                                             "claim":  "2d",
+                                             "maximum_error_conservative_lower_bound":  2792,
+                                             "maximum_error_lower_bound_interval":  {
+                                                                                        "lower":  "2792.2010843470368772083939041204",
+                                                                                        "upper":  "2792.2010843470368772083939041205"
+                                                                                    },
+                                             "passed":  true,
+                                             "reference_second_moment":  {
+                                                                             "lower":  "12710289.404775930725241150258045",
+                                                                             "upper":  "12710289.404775930725241150258046"
+                                                                         },
+                                             "root_bracket_second_moment":  {
+                                                                                "lower":  "1853546662.3124314668947546369577",
+                                                                                "upper":  "1853546662.3124314668947546369578"
+                                                                            },
+                                             "root_trace_intervals_overlap":  true,
+                                             "scope":  "Exact saved coefficients and pinned reference points rounded at source precision; source-derived lower bound is independent of root values; no analytic source or asymptotic claim",
+                                             "source_precision_bits":  3386,
+                                             "source_second_moment":  {
+                                                                          "lower":  "1853546662.3124314668947546369577",
+                                                                          "upper":  "1853546662.3124314668947546369578"
+                                                                      },
+                                             "source_state_digest":  "a8e6f3f63525d0a77600c4bea80a4c8cc6987f8ef51eb377ffa30b45b9bf9569",
+                                             "work_precision_bits":  10414
+                                         },
+                                         {
+                                             "C":  90000,
+                                             "N":  300,
+                                             "claim":  "2e",
+                                             "maximum_error_conservative_lower_bound":  4633,
+                                             "maximum_error_lower_bound_interval":  {
+                                                                                        "lower":  "4633.1285355628702446642076516142",
+                                                                                        "upper":  "4633.1285355628702446642076516143"
+                                                                                    },
+                                             "passed":  true,
+                                             "reference_second_moment":  {
+                                                                             "lower":  "35095004.453427846897550431803119",
+                                                                             "upper":  "35095004.453427846897550431803120"
+                                                                         },
+                                             "root_bracket_second_moment":  {
+                                                                                "lower":  "7425655618.6695490672437777048508",
+                                                                                "upper":  "7425655618.6695490672437777048509"
+                                                                            },
+                                             "root_trace_intervals_overlap":  true,
+                                             "scope":  "Exact saved coefficients and pinned reference points rounded at source precision; source-derived lower bound is independent of root values; no analytic source or asymptotic claim",
+                                             "source_precision_bits":  3386,
+                                             "source_second_moment":  {
+                                                                          "lower":  "7425655618.6695490672437777048508",
+                                                                          "upper":  "7425655618.6695490672437777048509"
+                                                                      },
+                                             "source_state_digest":  "31a3c72d8119ab9e7cf382175aed1efb90759de2dfe0d4e7f440939768f48076",
+                                             "work_precision_bits":  10414
+                                         },
+                                         {
+                                             "C":  160000,
+                                             "N":  400,
+                                             "claim":  "2f",
+                                             "maximum_error_conservative_lower_bound":  6663,
+                                             "maximum_error_lower_bound_interval":  {
+                                                                                        "lower":  "6663.9346034372583355900232390350",
+                                                                                        "upper":  "6663.9346034372583355900232390351"
+                                                                                    },
+                                             "passed":  true,
+                                             "reference_second_moment":  {
+                                                                             "lower":  "72761770.058354174281916989765008",
+                                                                             "upper":  "72761770.058354174281916989765009"
+                                                                         },
+                                             "root_bracket_second_moment":  {
+                                                                                "lower":  "20109719610.666778554858821220952",
+                                                                                "upper":  "20109719610.666778554858821220953"
+                                                                            },
+                                             "root_trace_intervals_overlap":  true,
+                                             "scope":  "Exact saved coefficients and pinned reference points rounded at source precision; source-derived lower bound is independent of root values; no analytic source or asymptotic claim",
+                                             "source_precision_bits":  6708,
+                                             "source_second_moment":  {
+                                                                          "lower":  "20109719610.666778554858821220952",
+                                                                          "upper":  "20109719610.666778554858821220953"
+                                                                      },
+                                             "source_state_digest":  "04de3c3d2f7c5f072a901c8fa4f06d2e653a0d1aa621a978fff7dc1d187f56c6",
+                                             "work_precision_bits":  20380
+                                         },
+                                         {
+                                             "C":  250000,
+                                             "N":  500,
+                                             "claim":  "2g",
+                                             "maximum_error_conservative_lower_bound":  8860,
+                                             "maximum_error_lower_bound_interval":  {
+                                                                                        "lower":  "8860.9797955852767280762751285060",
+                                                                                        "upper":  "8860.9797955852767280762751285061"
+                                                                                    },
+                                             "passed":  true,
+                                             "reference_second_moment":  {
+                                                                             "lower":  "128665723.72218222406162890763557",
+                                                                             "upper":  "128665723.72218222406162890763558"
+                                                                         },
+                                             "root_bracket_second_moment":  {
+                                                                                "lower":  "43882131477.531236628405574033992",
+                                                                                "upper":  "43882131477.531236628405574033993"
+                                                                            },
+                                             "root_trace_intervals_overlap":  true,
+                                             "scope":  "Exact saved coefficients and pinned reference points rounded at source precision; source-derived lower bound is independent of root values; no analytic source or asymptotic claim",
+                                             "source_precision_bits":  5047,
+                                             "source_second_moment":  {
+                                                                          "lower":  "43882131477.531236628405574033992",
+                                                                          "upper":  "43882131477.531236628405574033993"
+                                                                      },
+                                             "source_state_digest":  "221ed2716448e22b01e280300935fa408b6ce3ee2ceef52867160253338fb439",
+                                             "work_precision_bits":  15397
+                                         }
+                                     ]
+                        },
+    "prolate_transfer":  {
+                             "formula":  "||T_lambda h||_infinity \u003c= lambda^(3/2) ||h||_infinity on [1/lambda,lambda]",
+                             "scope":  "Triangle-inequality upper bound; not a measured rate or a sharp estimate"
+                         },
+    "mellin_tails":  {
+                         "formula":  "|F_infinity(1/2+it)-F_lambda(1/2+it)| \u003c= 1/(6*lambda^(3/2)) + sqrt(lambda)*exp(-lambda)*(1+1/(2*lambda))",
+                         "scope":  "Uniform absolute transform-value bound for lambda\u003e1 and real t; no zero-location guarantee",
+                         "directed_examples":  [
+                                                   {
+                                                       "C":  100,
+                                                       "absolute_tail_bound":  {
+                                                                                   "lower":  "5.4212083097914742167077252850288e-3",
+                                                                                   "upper":  "5.4212083097914742167077252850289e-3"
+                                                                               },
+                                                       "lambda":  10
+                                                   },
+                                                   {
+                                                       "C":  10000,
+                                                       "absolute_tail_bound":  {
+                                                                                   "lower":  "1.6666666666666666666666666666666e-4",
+                                                                                   "upper":  "1.6666666666666666666666666666667e-4"
+                                                                               },
+                                                       "lambda":  100
+                                                   },
+                                                   {
+                                                       "C":  1000000,
+                                                       "absolute_tail_bound":  {
+                                                                                   "lower":  "5.2704627669472988866648225740545e-6",
+                                                                                   "upper":  "5.2704627669472988866648225740546e-6"
+                                                                               },
+                                                       "lambda":  1000
+                                                   }
+                                               ]
+                     },
+    "literature":  [
+                       {
+                           "scope":  "Uniform prolate asymptotics in specified regimes; no direct transfer to finite-Dirichlet model asserted",
+                           "url":  "https://doi.org/10.7153/jca-11-01",
+                           "source":  "Dunster, J. Classical Analysis 11 (2017), 1-21"
+                       },
+                       {
+                           "scope":  "Attributed initial-ten-root numerical report; not independently validated here and not an all-N comparison",
+                           "url":  "https://arxiv.org/abs/2605.20224v4",
+                           "source":  "Groskin, arXiv:2605.20224v4"
+                       }
+                   ]
+}
+}

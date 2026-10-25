@@ -1,944 +1,597 @@
 \documentclass[11pt,a4paper]{article}
 \usepackage[utf8]{inputenc}
-\usepackage{amsmath,amssymb,amsthm}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb}
 \usepackage{booktabs}
-\usepackage{hyperref}
 \usepackage{geometry}
-\usepackage{pgfplots}
+\usepackage{microtype}
+\usepackage[hidelinks]{hyperref}
 \usepackage{orcidlink}
-\pgfplotsset{compat=1.18}
 \geometry{margin=1in}
-
-\newtheorem{theorem}{Theorem}
-\newtheorem{conjecture}{Conjecture}
-\newtheorem{remark}{Remark}
-
-\title{Empirical Falsification of Convergence Rate Predictions\\
-for the Connes--Consani--Moscovici Zeta Spectral Triple}
-
+\hypersetup{pdftitle={Convergence Claims for the CCM Construction: An Empirical Reassessment},
+pdfauthor={Ronnie Andrews, Jr.}}
+\title{Convergence Claims for the CCM Construction:\\An Empirical Reassessment}
 \author{Ronnie Andrews, Jr.\,\orcidlink{0009-0003-9724-3104}%
 \thanks{Correspondence: \texttt{randrewsmath@gmail.com}}}
-
-\date{June 2026}
-
+\date{November 3, 2026\\[3pt]\small Version 2.1}
 \begin{document}
 \maketitle
 
 \begin{abstract}
-Two papers in the literature make quantitative predictions about
-the convergence rate of the Connes--Consani--Moscovici (CCM)
-operator construction~\cite{CCM2025}: CCM Lemma~7.2 conjectures
-that the smallest Weil-form eigenvector $\xi_\lambda$ is
-approximated by a prolate-wave educated guess $k_\lambda$ at
-relative rate $O(\lambda^{-2})$, and \'Sliwi\'nski's
-Conjecture~4.1~\cite{Sliwinski2026} predicts
-$\varepsilon(\kappa)\cdot\ln(\kappa)$ approaches a nonzero
-constant in the regime $\kappa = N = \lambda$. We test both
-predictions at high precision (primarily $1000$ digits,
-MPFR/GMP). Lemma~7.2 is empirically falsified:
-$\text{rel}\times\lambda^2$ grows by ${\approx}1.116\times 10^6$
-across $\lambda^2\in[13,1000]$ rather than remaining bounded.
-Conjecture~4.1 is empirically unsupported: $\varepsilon\cdot\ln\lambda$
-ranges over $[2.316, 3.704]$ (full-spectrum) and $[1.041, 1.853]$
-(trimmed-interior) across $\kappa\in[50,500]$, without approaching
-a constant; \'Sliwi\'nski's Theorem~3.1 lower bound holds at every
-configuration with margin $4.2\times$--$14.8\times$.
-Per-eigenvalue analysis reveals the construction converges
-\emph{super-exponentially} on the first eigenvalues --- $160.8$
-digits at $\kappa=50$, $608.4$ digits at $\kappa=200$, saturating
-the $1000$-digit precision ceiling at $\kappa=400$ --- while
-aggregate metrics are dominated by high-index eigenvalues at the
-matrix's truncation boundary. The CCM construction is $10^{55}$
-more accurate than naive Mellin truncation, confirming its power
-is algebraic rather than analytic. This work has been shared with
-Professor Henri Moscovici (a co-author of~\cite{CCM2025}), who
-forwarded it to lead author Professor Alain Connes for review.
+I revisit the three experiments in my earlier paper on the
+Connes--Consani--Moscovici (CCM) construction: a Weil--prolate comparison,
+a test motivated by \'Sliwi\'nski's spectral-error conjecture, and
+auxiliary Mellin-transform comparisons. Corrected calculations and a
+review of the quantities being compared change the conclusions.
+The Weil--prolate experiment shows close finite sampled agreement and
+does not test CCM Lemma~7.2. The spectral experiment now examines
+maximum error along the prescribed scaling $\lambda=N$. Independent
+interval checks account for all 1700 positive roots in seven saved
+finite spectra. Across a tenfold increase in the parameter, maximum
+error grows about 49-fold; growth persists after excluding the highest
+20\% of roots. A coefficient-based trace bound independently excludes
+small maximum errors in these saved spectra. The same calculations give increasingly accurate initial
+roots. This separation between initial-root accuracy and expanding-window
+error is evidence against the proposed uniform inverse-logarithmic decay
+in the tested range. Analytic source-error control and an asymptotic
+disproof remain open. The Mellin scans located real-part crossings
+that fail the complex-zero check. A separate boundary argument proves
+that the tested fixed-cutoff surrogates have only finitely many
+critical-line zeros, although the untruncated weight represents zeta
+exactly. This identifies a truncation obstruction without challenging
+CCM's own transform. I withdraw the earlier falsification claims and
+retain the corrected measurements, their limitations, and the
+reproduction scripts.
 \end{abstract}
 
-\section{Introduction}
+\section{Purpose of this correction}
 
-The construction of Connes, Consani, and Moscovici~\cite{CCM2025}
-proposes a finite-dimensional operator family
-$D_{\log}^{(\lambda, N)}$ whose spectrum approximates the
-imaginary parts of the nontrivial Riemann zeros with extraordinary
-numerical accuracy. The construction has been independently
-reproduced and extended to 999~matching digits at
-$(\lambda^2{=}1000, N{=}800, \text{HP-1000})$ in our companion
-paper~\cite{Andrews2026A}.
+The earlier version of this paper interpreted three numerical tests
+as evidence against proposed explanations of the accuracy of the CCM
+construction~\cite{CCM2025}. This revision addresses those same tests.
+It corrects the attribution, numerical results, and conclusions.
+Its stance on the spectral-error conjecture is empirical: the seven
+finite comparisons give an adverse trend in the specified maximum-error
+observable. This is evidence against the proposed decay in the tested
+range, not a proof about the limit.
 
-A natural question is the rate at which this approximation
-improves with $\lambda$ and $N$. Two recent works in the
-literature offer specific quantitative predictions:
+I apologize to the CCM authors for mislabeling the Weil--prolate
+comparison as a test of their Lemma~7.2. That lemma compares suitably
+normalized prolate and Hermite functions. The approximation of a
+Weil state by a prolate trial is a different question. I withdraw
+the claim that my experiment falsifies Lemma~7.2.
 
-\begin{conjecture}[CCM Lemma~7.2~\cite{CCM2025}]
-\label{conj:lemma72}
-There exists a constant $C > 0$ such that the smallest Weil-form
-eigenvector $\xi_\lambda$ is approximated by the prolate-wave
-educated guess $k_\lambda$ in relative $L^\infty$ error at rate
-$\|\xi_\lambda - c\,k_\lambda\|_\infty / \|\xi_\lambda\|_\infty
-\leq C\,\lambda^{-2}$ for some optimal scalar~$c$.
-\end{conjecture}
+Two further corrections are necessary. \'Sliwi\'nski's
+Conjecture~4.1 concerns maximum error, whereas the earlier rate
+argument used mean error~\cite{Sliwinski2026}. The auxiliary Mellin
+experiments located zeros of a real part, not validated complex zeros.
+Neither comparison supports the earlier conclusions in the form
+stated. The following sections report what the retained evidence
+does support.
 
-\begin{conjecture}[\'Sliwi\'nski Conjecture~4.1~\cite{Sliwinski2026}]
-\label{conj:sliwinski}
-In the regime $\kappa = N = \lambda$, the limit
-$\lim_{\kappa\to\infty} \varepsilon(\kappa)\cdot\ln(\kappa)$
-exists and equals a nonzero constant, where
-$\varepsilon(\lambda, N) = (1/N)\sum_{k=1}^{N}|\nu_k - \zeta_k|$
-is the mean absolute spectral error.
-\end{conjecture}
+\section{Numerical conventions}
 
-Both conjectures, if true, would provide a route to proving the
-Riemann Hypothesis: Conjecture~\ref{conj:lemma72} is Step~2 of
-the proof strategy in~\cite{CCM2025}, and
-Conjecture~\ref{conj:sliwinski} would imply $\varepsilon \to 0$
-hence eigenvalue convergence to the Riemann zeros.
+Write $C=\lambda^2$ and let $N$ be the positive Fourier cutoff.
+The finite Weil matrix has dimension $2N+1$; its even sector has
+dimension $N+1$. The experiments use a retained even coefficient
+vector, the associated finite Weil function, and, where requested,
+the positive movable roots of its secular expression. These finite
+objects are not identified here with the limiting CCM state. Below I
+identify the complete finite root list with the saved finite rank-one
+spectrum; the full infinite spectrum is a different object.
 
-In this paper we:
-\begin{enumerate}
-\item Test Conjecture~\ref{conj:lemma72} at high precision
-(primarily $1000$ digits) across $\lambda^2 \in \{13, 100, 1000\}$ and
-find it empirically falsified: the quantity
-$\text{rel}\times\lambda^2$ grows by a factor of approximately
-$1.116\times 10^6$ across the tested range;
-\item Test Conjecture~\ref{conj:sliwinski} in its own regime
-($\kappa = N = \lambda$) at HP-1000 ($3338$-bit precision) across
-$\kappa \in \{50, 100, 150, 200, 300, 400, 500\}$.
-$\varepsilon(\kappa)\cdot\ln\lambda$ does not approach a constant:
-full-spectrum values range over $[2.316, 3.704]$ ($1.600\times$
-spread), trimmed-interior values over $[1.041, 1.853]$
-($1.600\times$ first/last).
-The conjectural limit form is empirically unsupported by this
-data. Theorem~3.1 (\'Sliwi\'nski's lower bound) is satisfied at
-every configuration with substantial margin
-($4.163\times$--$14.82\times$ ratios);
-\item Quantify how much of CCM's accuracy is captured by integral
-transforms of $\xi_\lambda$, at HP-1000 (3338-bit) precision: at
-$\lambda^2 = 13$, naive Mellin truncation gives $O(1)$ error
-against Riemann zeros while CCM gives $55$~matching digits, an
-improvement factor of $10^{55}$;
-\item Argue from this evidence that integral-transform bridges
-from $\xi_\lambda$ to the Riemann zeros (Mellin truncation and
-$\xi$-weighted variants tested here) fall short of CCM by orders
-of magnitude, and that the construction's accuracy comes from
-\emph{algebraic} structure
-(eigenvalue problem followed by rational-function zeros).
-\end{enumerate}
+The revised runs use arbitrary-precision arithmetic through the
+Xcelerator Toolkit, with source identities, numerical settings, and
+software revisions recorded in each journal. The letter $P$ denotes
+requested decimal working precision, not certified output digits.
+The $P=1000$ and $P=2000$ sources below use 3386 and 6708 bits,
+respectively; numerical kernels may increase precision according to
+their error checks. Historical outputs retain their original settings.
 
-The CCM construction itself is not in question here. Our
-companion paper~\cite{Andrews2026A} verifies its eigenvalues
-against $2000$-digit reference zeros (Step~1 of the CCM proof
-strategy holds to $999$~matching digits at $\lambda^2{=}1000$,
-$N{=}800$, HP-1000). The findings of the
-present paper concern only the proposed quantitative bridges
-\emph{from} $\xi_\lambda$ \emph{to} the Riemann Hypothesis, and
-the accuracy comparison against alternative integral
-formulations. All computations are reproducible from the
-source-available implementation at\\
-\url{https://github.com/TeamXcelerator/ccm-convergence-rate-falsifications}.
+The current root-acquisition route is independent of the reference
+zeta ordinates; the subsequent comparisons use a retained reference
+dataset. Successful execution, finite hypothesis outcomes, and
+supplemental diagnostic coverage are recorded separately. A completed
+experiment can have a negative result or leave an asymptotic question
+unanswered.
 
-\section{Mathematical Setup}
+\section{Test 1: the Weil--prolate comparison}
+\label{sec:prolate}
 
-We briefly recall the relevant constructions, following the
-notation of~\cite{CCM2025} and~\cite{Sliwinski2026}.
-
-\subsection{The Weil Quadratic Form and the Eigenvector $\xi_\lambda$}
-
-Let $\lambda > 1$ and $L = 2\ln\lambda$. The Weil quadratic form
-$QW_\lambda$ is a real symmetric $(2N{+}1) \times (2N{+}1)$ matrix
-with entries
+The trial is constructed from a zero-integral combination of the
+even prolate modes with zero and four nodes, followed by the finite
+sum map
 \[
-\tau_{n,m} = W_{0,2}(V_n, V_m) - W_R(V_n, V_m)
-- \sum_{\substack{k = p^j \\ k \leq \lambda^2}}
-\frac{\log p}{\sqrt{k}}\, q(V_n, V_m)(\log k),
+ h_\lambda=h_{4,\lambda}-r_\lambda h_{0,\lambda},\qquad
+ r_\lambda=\frac{\int h_{4,\lambda}(x)\,dx}{\int h_{0,\lambda}(x)\,dx},
+ \qquad k_\lambda(u)=\sqrt u\sum_{1\leq n\leq\lambda/u}h_\lambda(nu).
 \]
-where $V_n(u) = (1/\sqrt{L})\,e^{2\pi i n \ln(\lambda u)/L}$
-forms an orthonormal basis on
-$\mathcal{H}_\lambda = L^2([\lambda^{-1}, \lambda], du/u)$.
-The smallest eigenvalue $\varepsilon_N$ of $\tau$ has eigenvector
-$\xi = (\xi_{-N}, \ldots, \xi_N)$, symmetrized to be even
-($\xi_{-j} = \xi_j$) and normalized so $\sum_j \xi_j = \sqrt{L}$.
-(The forced-even symmetrization is a theoretical guarantee; empirically
-the natural smallest eigenvector is even without it at every
-configuration tested above the precision floor --- see~\cite{Andrews2026A}.)
+The numerical implementation uses a three-point finite-difference
+prolate model with zero endpoint values and piecewise-linear
+interpolation. It is a finite-Dirichlet approximation, not a
+certified evaluation of the regular continuum prolate functions.
 
-\subsection{The Prolate-Wave Educated Guess $k_\lambda$}
-
-The prolate spheroidal wave operator on $[-\lambda, \lambda]$ is
-$\text{PW}_\lambda = -\partial_x((\lambda^2 - x^2)\partial_x)
-+ (2\pi\lambda x)^2$.
-Let $h_{0,\lambda}$ and $h_{4,\lambda}$ be the two even
-eigenfunctions with $0$ and $4$ nodes respectively. Define
-$h_\lambda = h_{4,\lambda} - r\,h_{0,\lambda}$ with
-$r = \int h_{4,\lambda}\,dx \,/\, \int h_{0,\lambda}\,dx$
-so that $\int h_\lambda\,dx = 0$. The educated guess is then
+For the $1024$ logarithmically spaced retained samples, let $x_i$
+denote the finite Weil function and $g_i$ the trial. The reported
+observable is the sampled maximum residual after least-squares scaling:
 \[
-k_\lambda(u) := \sqrt{u}\sum_{n=1}^{\lfloor\lambda/u\rfloor}
-h_\lambda(n\,u),
-\quad u \in [\lambda^{-1}, \lambda],
+ a_{\rm LS}=\frac{\sum_i x_i g_i}{\sum_i g_i^2},\qquad
+ E_{\rm LS}=\frac{\max_i|x_i-a_{\rm LS}g_i|}{\max_i|x_i|}.
 \]
-i.e.\ the Eisenstein-like sum map applied to $h_\lambda$.
+It is neither a continuous supremum nor the minimax fit over scalars.
 
-Conjecture~\ref{conj:lemma72} predicts that $k_\lambda$
-approximates $\xi_\lambda$ at relative rate $O(\lambda^{-2})$.
-
-\subsection{The Truncated Completed Eta Function $\Lambda_\lambda(s)$}
-
-The truncated completed eta function is
-\[
-\Lambda_\lambda(s) := \int_{\lambda^{-1}}^{\lambda}
-t^{s-1}\,\omega(t)\,dt,
-\quad \omega(t) := \frac{t\,e^t}{(1+e^t)^2},
-\]
-and its $\xi$-weighted variant is
-\[
-G(s) := \int_{\lambda^{-1}}^{\lambda}
-f_\lambda(u)\,\omega(u)\,u^{s-1}\,du,
-\]
-where $f_\lambda(u) = (1/\sqrt{L})\sum_n \xi_n e^{2\pi i n
-\ln(\lambda u)/L}$ is the function reconstructed from
-$\xi_\lambda$. As $\lambda \to \infty$, $\Lambda_\lambda(s)
-\to \Lambda(s) = \Gamma(s+1)\eta(s)$, whose zeros include the
-Riemann zeros~\cite{Yakaboylu2024}.
-
-\section{Implementation}
-
-Our implementation uses the Xcelerator
-Toolkit,\footnote{\url{https://github.com/TeamXcelerator/xcelerator-toolkit}}
-a publicly available library of high-precision spectral methods for
-analytic number theory, pinned to a tagged release for reproducibility.
-The toolkit provides the core numerical
-primitives (Gauss--Legendre quadrature with disk-cached HP nodes,
-LU-based inverse iteration, Newton refinement) and the CCM-specific
-construction, prolate-wave operators, and Mellin transforms. The
-paper-specific repository contains only the CLI harness and
-reproduction scripts.
-
-The toolkit is built on Rust (edition 2021), \texttt{rug} (v1.30,
-wrapping MPFR/GMP) for arbitrary-precision arithmetic,
-\texttt{nalgebra} (v0.33) for f64 dense linear algebra, and
-\texttt{rayon} (v1.10) for parallelism. Root-finding uses
-Halley's method (cubic convergence) as the default, with
-analytically available first and second derivatives of the
-rational function $R(z)$; the solver returns a three-state
-result (\texttt{Converged}, \texttt{Approximate}, \texttt{Failed})
-so that precision-floor stagnation is distinguished from true
-convergence failure. Three subcommands
-correspond to the three tests:
-\begin{itemize}
-\item \texttt{prolate-compare} (Conjecture~\ref{conj:lemma72}):
-loads a pre-computed $\xi_\lambda$ JSON, builds $\text{PW}_\lambda$
-via 3-point finite differences on a uniform grid, identifies
-$h_{0,\lambda}$ and $h_{4,\lambda}$ by parity and node-counting,
-forms $h_\lambda$ and applies the $\mathcal{E}$ map, then computes
-$\|\xi_\lambda - c\,k_\lambda\|_\infty / \|\xi_\lambda\|_\infty$
-on a logarithmically-spaced sample grid in $[\lambda^{-1}, \lambda]$.
-\item \texttt{sliwinski-check} (Conjecture~\ref{conj:sliwinski}):
-runs the high-precision CCM construction at given $(\lambda, N)$
-configurations, computes the full positive eigenvalue spectrum,
-and tabulates $\varepsilon(\lambda, N)$ against
-$1/(4\ln\lambda)$ and $\varepsilon\cdot\ln\lambda$.
-\item \texttt{mellin-compare} (CCM vs Mellin truncation): scans
-the critical line $\Re(s) = 1/2$ for zeros of both $\Lambda_\lambda(s)$
-and $G(s)$ via Gauss--Legendre quadrature, then bisects in
-high precision to locate each zero precisely.
-\end{itemize}
-
-The high-precision $\xi_\lambda$ values are reused from the same
-runs that produced the eigenvalue verification in our companion
-paper~\cite{Andrews2026A}, ensuring consistency between the two
-papers' empirical foundations.
-
-\section{Result 1: CCM Lemma~7.2 is Empirically Falsified}
-\label{sec:lemma72}
-
-Conjecture~\ref{conj:lemma72} asserts that
-$\text{rel}\times\lambda^2$ should be approximately constant
-(equal to $C$) across $\lambda$. We measure this quantity at
-three configurations:
-
-\begin{table}[h]
-\centering
-\caption{Prolate-wave approximation of $\xi_\lambda$ at HP-1000
-working precision ($3338$-bit, MPFR/GMP). All three $\xi_\lambda$
-values pre-computed at HP-1000 and committed to the data
-directory; banded tridiagonal LU recovers each prolate
-eigenvector at HP-1000 in milliseconds.}
-\label{tab:lemma72}
-\begin{tabular}{@{}llrrr@{}}
+\begin{table}[htbp]
+\centering\small
+\caption{Earlier reported residuals and current sampled residuals.
+The earlier rows used $P=1000$; $P$ below is the current setting.
+Source policy and implementation also changed.}
+\label{tab:prolate}
+\begin{tabular}{@{}lrrrrrr@{}}
 \toprule
-Configuration & $N_{\text{grid}}$ & rel $L^\infty$ error & $\text{rel}\times\lambda^2$ & $\lambda^{-2}$ bound \\
+Claim & $C$ & $N$ & Grid & $P$ & Earlier & Current $E_{\rm LS}$ \\
 \midrule
-$\lambda^2{=}13$, $N{=}120$   & $4001$ & $6.887\times 10^{-5}$ & $8.953\times 10^{-4}$ & $7.69\times 10^{-2}$ \\
-$\lambda^2{=}100$, $N{=}500$  & $4001$ & $6.697\times 10^{-4}$ & $6.697\times 10^{-2}$ & $1.00\times 10^{-2}$ \\
-$\lambda^2{=}100$, $N{=}500$  & $8001$ & $6.470\times 10^{-4}$ & $6.470\times 10^{-2}$ & $1.00\times 10^{-2}$ \\
-$\lambda^2{=}1000$, $N{=}800$ & $8001$ & $\mathbf{9.988\times 10^{-1}}$ & $\mathbf{9.988\times 10^{2}}$ & $1.00\times 10^{-3}$ \\
+1a & 13 & 120 & 4001 & 1000 & $6.887\times10^{-5}$ & $6.88681023\times10^{-5}$ \\
+1b & 100 & 500 & 4001 & 1000 & $6.697\times10^{-4}$ & $6.71252770\times10^{-4}$ \\
+1c & 100 & 500 & 8001 & 1000 & $6.470\times10^{-4}$ & $6.46956953\times10^{-4}$ \\
+1d & 1000 & 800 & 8001 & 2000 & $9.988\times10^{-1}$ & $7.08120048\times10^{-3}$ \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-The growth of $\text{rel}\times\lambda^2$ is dramatic: $8.953\times
-10^{-4} \to 6.470\times 10^{-2} \to 9.988\times 10^{2}$ across the
-three configurations (using the $N_{\text{grid}}=8001$ row at
-$\lambda^2{=}100$ for the apples-to-apples comparison), a factor
-of approximately $1.116\times 10^6$. If Conjecture~\ref{conj:lemma72}
-held, this column would be approximately constant.
+The current fits have been independently replayed on the serialized
+sample values. At $C=1000$, the residual is approximately $0.7081\%$,
+replacing the earlier $99.88\%$. The description of the profiles as
+essentially uncorrelated is therefore withdrawn. The change cannot
+be attributed to precision alone. At $C=100$, the two grid sizes
+share the same Weil-source identities; grid refinement lowers the
+residual by about $3.62\%$. Two grids do not establish the continuum
+error or remove the need to control the finite-difference model.
 
-At $\lambda^2 = 1000$, the residual is $99.9\%$ of $\xi_\lambda$
-itself, with the optimal scalar~$c$ at exponential magnitude
-($\sim 4.567\times 10^{501}$). The educated guess has essentially
-no correlation with the actual eigenvector at large~$\lambda$.
+CCM Lemma~7.2 gives an absolute uniform prolate--Hermite estimate,
+after normalization. It is not a relative Weil--prolate error bound.
+Moreover, finitely many values of $C E_{\rm LS}$, with changing
+Fourier cutoff and numerical resolution, cannot disprove an
+asymptotic bound with unspecified constant and onset. The defensible
+result is close sampled agreement for these four finite configurations;
+the asserted falsification does not survive.
 
-\subsection{Grid Convergence Test}
+The missing transfer estimate can be made explicit. Denote the preceding
+sum map by $T_\lambda$. On $\lambda^{-1}\leq u\leq\lambda$, the triangle
+inequality gives
+\begin{equation}
+ |T_\lambda h(u)|\leq\frac{\lambda}{\sqrt u}\|h\|_\infty,
+ \qquad \|T_\lambda h\|_\infty\leq\lambda^{3/2}\|h\|_\infty.
+ \label{eq:prolate-transfer}
+\end{equation}
+Even an absolute input error $O(\lambda^{-2})$ therefore yields only
+the crude transferred bound $O(\lambda^{-1/2})$ by this argument.
+This is an upper bound, not a prediction of the actual decay; cancellation
+could improve it. A relative Weil--prolate estimate additionally needs
+control of the Weil approximation and its normalization. Dunster's
+uniform prolate asymptotics provide error bounds in specified parameter
+regimes~\cite{Dunster2017}; applying such results here would still require
+matching those regimes and controlling the finite-Dirichlet discretization.
+This identifies what a genuine convergence test would have to measure.
 
-To rule out finite-difference truncation as the cause of the
-residual, we doubled the grid resolution at $\lambda^2 = 100$:
+\section{Test 2: the spectral-error comparison}
+\label{sec:roots}
 
-\begin{table}[h]
-\centering
-\caption{Grid convergence of the prolate-wave residual at
-$\lambda^2{=}100$, HP-1000. Halving the FD grid spacing changes
-the residual by $3.6\%$, far short of the $4\times$ reduction
-an $O(h^2)$ method would produce if FD truncation dominated.}
-\label{tab:grid_conv}
-\begin{tabular}{@{}lrl@{}}
-\toprule
-$N_{\text{grid}}$ & rel $L^\infty$ & change from $4001$ \\
-\midrule
-$4001$ & $6.71253\times 10^{-4}$ & --- \\
-$8001$ & $6.46957\times 10^{-4}$ & $-3.6\%$ \\
-\bottomrule
-\end{tabular}
-\end{table}
+Let $\mu_1<\cdots<\mu_N$ be the complete positive movable-root list
+of a retained finite source and let $\gamma_k$ be the $k$th positive
+reference zeta ordinate. The experiment records both
+\[
+ A_N=\frac1N\sum_{k=1}^N|\mu_k-\gamma_k|,
+ \qquad B_N=\max_{1\leq k\leq N}|\mu_k-\gamma_k|.
+\]
+It also retains a separately labeled trimmed mean. These are different
+observables and are not interchanged here.
 
-If the residual were dominated by FD truncation, doubling the
-grid (halving $h$) should cut the error by $4\times$ (an
-$O(h^2)$ method). Instead it changed by $3.6\%$, ruling out
-truncation as the driver.
+Dominik \'Sliwi\'nski clarified in correspondence that the intended
+observable is maximum ($L^\infty$) error, rather than mean error.
+His clarification prompted me to re-evaluate this test using maximum error.
 
-\subsection{Interpretation}
+His published Definitions~2.5--2.6 distinguish mean error $\epsilon$ from maximum error
+$\mathcal E$. Conjecture~4.1 asserts the
+existence of $\lim_{\kappa\to\infty}\mathcal E(\kappa)\log\kappa$
+along $\lambda=N=\kappa$. A nonzero limit is suggested separately
+after the displayed conjecture. The earlier paper substituted the
+mean and treated the nonzero value as part of the conjecture.
+Those statements are corrected here.
 
-The prolate operator itself is well-resolved: the smallest
-prolate eigenvalue at $\lambda^2 = 1000$ is $6282.28$, against the
-asymptotic prediction $2\pi\lambda^2 = 6283.19$ ($0.014\%$ relative
-error). The failure is not in the prolate eigenfunctions, but in
-the chain $h_{0,\lambda}, h_{4,\lambda} \to h_\lambda
-\to k_\lambda \to$ comparison with $\xi_\lambda$. The educated
-guess works well at small $\lambda$ (where $\text{PW}_\lambda$
-approaches the harmonic oscillator limit) and breaks down at
-large~$\lambda$.
+Crucially, Definition~2.6 maximizes over the $N$ positive eigenvalues
+of the finite $(2N+1)$-dimensional operator in Definition~2.4.
+For a saved even vector $w$, put $S=\sum_j w_j\ne0$, let
+$D=\operatorname{diag}(d_j)$ be the Fourier diagonal, and set
+$A=D-(Dw)\mathbf1^T/S$. The rank-one determinant identity gives
+\[
+ \det(zI-A)=\frac{z}{S}Q(z),\qquad
+ Q(z)=\prod_{j=-N}^N(z-d_j)\sum_{j=-N}^N\frac{w_j}{z-d_j}.
+\]
+This is the finite construction underlying CCM Lemma~5.4.
+For these saved sources all weights are nonzero. Independent directed
+interval checks bracket $N$ distinct positive roots away from the poles;
+symmetry supplies $N$ negative partners, exhausting the degree $2N$ of
+$Q$. Thus the checked roots are the complete positive spectrum of the
+saved finite matrix $A$. The unchanged lattice modes of the infinite
+CCM operator do not belong in this finite comparison. A full-infinite-spectrum
+indexing caveat would address a different observable.
 
-\begin{remark}
-This finding is consistent with the post-2022 CCM literature
-trajectory: the authors moved away from the positive prolate
-spectrum in their 2022 PNAS work (toward the Sonin space), and
-\'Sliwi\'nski's January 2026 paper proves an inverse-logarithmic
-lower bound via Heisenberg uncertainty that does not rely on
-prolate waves at all.
-\end{remark}
+The seven scripts 2a--2g have been run at
+$\kappa=50,100,150,200,300,400,500$, with $C=\kappa^2$.
+The completed runs use $P=1000$ through $\kappa=300$, $P=2000$
+at $\kappa=400$, and $P=1500$ at $\kappa=500$.
+Required measurements and applicable supplemental acquisitions are
+accounted for through original runs and retained-source recoveries.
+Table~\ref{tab:kappa} reports all seven current maximum-error rows.
+The independent Rust verifier uses directed MPFR intervals and no
+Toolkit numerical code. It checks all 1700 roots and computes errors
+against the pinned reference dataset. Original journals support the
+first five rows; authenticated published source/root artifacts support
+the last two. The brackets certify the exact saved sources, not their
+distance from the analytically defined Weil ground states.
 
-\section{Result 2: \'Sliwi\'nski's Conjecture~4.1 is Empirically Unsupported at HP-1000}
-\label{sec:sliwinski}
-
-\'Sliwi\'nski~\cite{Sliwinski2026} proves Theorem~3.1, the lower
-bound $\varepsilon(\lambda, N) \geq 1/(4\ln\lambda)$, via a
-Heisenberg uncertainty argument: position operator on
-$L^2([\lambda^{-1}, \lambda], du)$ has support size $2\ln\lambda$,
-hence $\sigma_u \leq 2\ln\lambda$, and $\sigma_u \cdot \sigma_D
-\geq 1/2$ gives $\sigma_D \geq 1/(4\ln\lambda)$.
-Conjecture~\ref{conj:sliwinski} further claims this bound is
-asymptotically tight: $\varepsilon(\kappa)\ln(\kappa)$ approaches
-a nonzero constant.
-
-\subsection{Standard CCM Regime ($N \gg \lambda$)}
-
-\begin{table}[h]
-\centering
-\caption{\'Sliwi\'nski's lower bound applied to our standard CCM
-configurations, all at HP-1000 ($3338$-bit) working precision.
-$\varepsilon$ is the mean absolute spectral error against the
-first $N$ Riemann zeros.}
-\label{tab:sliw_standard}
-\begin{tabular}{@{}rrrrrrrr@{}}
-\toprule
-$\lambda$ & $\lambda^2$ & $N$ & digits & mean abs $\varepsilon$ & $1/(4\ln\lambda)$ & ratio & $\varepsilon\cdot\ln\lambda$ \\
-\midrule
-$\sqrt{13}$       & $13$    & $120$ & $1000$ & $1.063$  & $0.195$  & $5.454\times$  & $1.363$ \\
-$10$              & $100$   & $500$ & $1000$ & $1.595$  & $0.109$  & $14.69\times$  & $3.673$ \\
-$\sqrt{1000}$     & $1000$  & $800$ & $1000$ & $3.608$\textsuperscript{\dag} & $0.072$  & $49.85\times$ & $12.46$ \\
-\bottomrule
-\multicolumn{8}{l}{\footnotesize\textsuperscript{\dag}At HP-500 this
-row previously read $\varepsilon = 5.638$ ($\varepsilon\cdot\ln\lambda
-= 19.5$). That value was inflated by} \\
-\multicolumn{8}{l}{\footnotesize working-precision saturation of the
-low-index eigenvalues: at HP-500 the first eigenvalues saturate near
-$500$ matching} \\
-\multicolumn{8}{l}{\footnotesize digits, whereas at HP-1000 they
-resolve to ${\sim}999$ (Table~\ref{tab:per_eigenvalue}), lowering the
-mean. The HP-1000 value is the accurate one.} \\
-\end{tabular}
-\end{table}
-
-Theorem~3.1 holds with substantial margin ($5\times$ to $50\times$).
-The conjecture, however, would require $\varepsilon\cdot\ln\lambda$
-to be roughly constant; we observe it growing from $1.36$ to
-$12.46$ across the three configurations (a factor of $9.14$).
-
-\subsection{\'Sliwi\'nski's Own Regime ($\kappa = N = \lambda$) at HP-1000}
-\label{subsec:sliw_hp1000}
-
-This is the regime in which Conjecture~\ref{conj:sliwinski} was
-formulated. We test it at $1000$-digit working precision
-($3338$~bits, MPFR/GMP) across $\kappa \in \{50, 100, 150, 200,
-300, 400, 500\}$. The full-spectrum metric $\bar\varepsilon = (1/N)
-\sum_k |\nu_k - \zeta_k|$ uses all $N$ eigenvalues; the
-trimmed-interior metric drops the top $20\%$ of edge
-eigenvalues, which lie at the matrix's truncation boundary
-(\emph{cf.}\ Section~\ref{subsec:per_eigvalue}).
-
-\begin{table}[h]
-\centering
-\caption{\'Sliwi\'nski's regime $\kappa = N = \lambda$ at HP-1000
-($3338$-bit precision). Full-spectrum metric uses all $N$
-eigenvalues; trim-$20\%$ drops the $\lfloor 0.2 N\rfloor$
-highest-index eigenvalues. ``ratio'' is the Theorem~3.1 ratio
-$\varepsilon / [1/(4\ln\lambda)]$; values $> 1$ mean the bound
-is satisfied.}
-\label{tab:sliw_hp1000}
-\begin{tabular}{@{}rrrrrrr@{}}
-\toprule
-$\kappa$ & full $\bar\varepsilon$ & full $\varepsilon{\cdot}\ln\lambda$ & full ratio & trim $\bar\varepsilon$ & trim $\varepsilon{\cdot}\ln\lambda$ & trim ratio \\
-\midrule
-$50$  & $6.899\times 10^{-1}$ & $2.699$  & $10.80\times$  & $2.960\times 10^{-1}$ & $1.158$  & $4.632\times$  \\
-$100$ & $5.375\times 10^{-1}$ & $2.475$  & $9.901\times$  & $2.765\times 10^{-1}$ & $1.273$  & $5.093\times$ \\
-$150$ & $4.878\times 10^{-1}$ & $2.444$  & $9.776\times$  & $2.077\times 10^{-1}$ & $1.041$  & $4.163\times$ \\
-$200$ & $4.371\times 10^{-1}$ & $2.316$  & $9.264\times$  & $2.084\times 10^{-1}$ & $1.104$  & $4.417\times$ \\
-$300$ & $4.293\times 10^{-1}$ & $2.449$  & $9.795\times$  & $1.956\times 10^{-1}$ & $1.115$  & $4.462\times$ \\
-$400$ & $4.554\times 10^{-1}$ & $2.729$  & $10.91\times$  & $2.136\times 10^{-1}$ & $1.280$  & $5.119\times$ \\
-$500$ & $5.960\times 10^{-1}$ & $\mathbf{3.704}$ & $\mathbf{14.82\times}$ & $2.981\times 10^{-1}$ & $\mathbf{1.853}$ & $7.410\times$ \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-Two findings:
-
-\begin{enumerate}
-\item \textbf{Theorem~3.1 holds at every configuration with
-substantial margin}, in both metrics: ratios from $4.163\times$
-($\kappa{=}150$ trim) to $14.82\times$ ($\kappa{=}500$ full).
-The bound is rigorously satisfied across the entire HP-1000 sweep.
-
-\item \textbf{Conjecture~4.1 is empirically unsupported at HP-1000.}
-The conjecture predicts $\varepsilon(\kappa)\cdot\ln\kappa$
-approaches a single nonzero constant. The data does not approach
-a constant in the tested range. Across $\kappa \in [50, 500]$:
-
-\begin{itemize}
-\item Full-spectrum: $\varepsilon\cdot\ln\lambda$ ranges over
-$[2.316, 3.704]$, a $1.600\times$ spread
-(first/last: $\kappa{=}200 \to 500$ ratio $1.599\times$).
-\item Trim-$20\%$: ranges over $[1.041, 1.853]$, a $1.780\times$
-first/last ratio ($\kappa{=}150$ to $\kappa{=}500$).
-\item Both metrics show steady growth toward $\kappa = 500$:
-the full metric increases $1.372\times$ from first to last config,
-the trimmed metric $1.600\times$.
-\end{itemize}
-\end{enumerate}
-
-The $\kappa = 500$ upturn may reflect a structural matrix
-resonance at this specific $(\kappa, N)$ pair, or numerical
-conditioning in the inverse-iteration and Newton refinement
-stages near the matrix's truncation boundary; we report both
-possibilities. Either way, $\varepsilon(\kappa)\cdot\ln\kappa$
-does not approach a constant in the tested range, and the
-conjectural limit form is not supported by this data.
-
-\paragraph{Floor independence.}
-At $\kappa = 400$ and $500$ the first eigenvalues saturate at the
-HP-1000 precision ceiling ($\sim 999$ matching digits; see
-Table~\ref{tab:per_eigenvalue}), meaning $\varepsilon_N$ at these
-configs is at or below the working-precision floor. This does
-\emph{not} invalidate the aggregate metric $\varepsilon(\kappa)$:
-the mean absolute error is dominated by the high-index eigenvalues
-at the matrix's truncation boundary, which contribute $O(1)$ error
-independently of the precision floor. Raising the working precision
-to HP-2000 would sharpen the first few eigenvalues (from $999$ to
-${\sim}2000$ digits) but would not materially change
-$\varepsilon(\kappa)$, because the $O(1)$ truncation-boundary tail
-still dominates the sum. The growth of $\varepsilon\cdot\ln\lambda$
-toward $\kappa = 500$ is therefore structural (more eigenvalues at
-the boundary contributing larger errors as $N$ grows), not a
-precision-floor artifact.
-
-The companion repository contains the trimmed-metric flag
-(\texttt{--trim-edge-fraction}) used to produce the
-right-hand columns above, so reviewers can re-run the analysis
-at any precision and any trim fraction they choose.
-
-\paragraph{Why the aggregate metric cannot approach a constant.}
-The mean error $\varepsilon(\kappa) = (1/N)\sum_k |\nu_k - \zeta_k|$
-is the average over $N$ eigenvalues. Table~\ref{tab:per_eigenvalue}
-shows the spectrum splits sharply into two regimes: the first
-$O(\kappa)$ eigenvalues converge to full working precision
-(matching digits growing linearly in $\kappa$ through the
-precision ceiling), while the last eigenvalue ($k = N$) remains
-at $\sim 2$--$3$ matching digits regardless of $\kappa$.
-Between these extremes, eigenvalue $k$ has roughly $N - k$
-remaining modes available above it to resolve its eigenvector;
-as $k$ approaches $N$ this mode budget shrinks to zero,
-driving the error to $O(1)$ at the truncation boundary.
-Since there are always $O(N)$ eigenvalues in this boundary
-regime contributing $O(1)$ error each, their total contribution
-to the sum is $O(N)$, making the mean $\varepsilon \sim O(1)$
-regardless of $\kappa$. Multiplying by $\ln\lambda = \ln\kappa$,
-which grows, gives $\varepsilon\cdot\ln\kappa \sim O(\ln\kappa)$
-rather than a constant. The conjectural limit requires uniform
-convergence across \emph{all} $N$ eigenvalues, but the truncation
-boundary prevents this structurally: no finite-dimensional
-matrix can avoid having eigenvalues at its truncation boundary
-that do not benefit from the extra modes available to the
-interior spectrum.
-
-\subsection{Mean vs.\ Uniform Error}
-
-\'Sliwi\'nski's Conjecture~4.1 targets the uniform (pointwise
-maximum) error $\max_k |\nu_k - \zeta_k|$ rather than the mean
-$(1/N)\sum_k |\nu_k - \zeta_k|$ used as the primary metric in
-Section~\ref{sec:sliwinski}; we thank \'Sliwi\'nski (private
-communication, 2026) for clarifying this distinction. Our data
-shows the uniform error also fails to stabilize when multiplied
-by $\ln^\alpha(\kappa)$ for any $\alpha$:
-
-\begin{table}[h]
-\centering
-\caption{Uniform error $\times\,\ln^\alpha(\kappa)$ at HP-1000
-($3338$-bit precision). If the uniform error decayed as
-$1/\ln^\alpha$, one column would be approximately constant. None
-do --- the values oscillate over orders of magnitude across
-$\kappa$, with a sharp upturn at $\kappa = 500$.}
-\label{tab:uniform_alpha}
+\begin{table}[htbp]
+\centering\small
+\caption{Complete saved finite spectra on $\lambda=N=\kappa$,
+$C=\kappa^2$. The full maximum $B_N$ occurs at $k=N$ in every row.
+$B_{0.8N}$ is the maximum over $1\leq k\leq\lfloor0.8N\rfloor$,
+excluding the highest 20\% of roots.}
+\label{tab:kappa}
 \begin{tabular}{@{}rrrrr@{}}
 \toprule
-$\kappa$ & uniform err & $\text{unif}\cdot\ln^1$ & $\text{unif}\cdot\ln^2$ & $\text{unif}\cdot\ln^3$ \\
+$\kappa=N$ & $P$ & $B_N$ & $B_N\log\kappa$ & $B_{0.8N}$ \\
 \midrule
-$50$  & $5.045$ & $19.74$ & $77.23$   & $302.2$   \\
-$100$ & $3.569$ & $16.44$ & $75.73$  & $348.9$   \\
-$150$ & $3.579$ & $17.93$ & $89.83$   & $450.1$  \\
-$200$ & $3.320$ & $17.60$ & $93.25$  & $494.3$   \\
-$300$ & $3.321$ & $18.94$ & $108.0$   & $616.1$  \\
-$400$ & $4.459$ & $26.71$ & $160.0$  & $958.8$   \\
-$500$ & $4.556$ & $28.32$  & $176.0$  & $1094$ \\
+50 & 1000 & $3.85480\times10^3$ & $1.50800\times10^4$ & 54.4129 \\
+100 & 1000 & $1.20360\times10^4$ & $5.54278\times10^4$ & 87.9902 \\
+150 & 1000 & $2.36891\times10^4$ & $1.18697\times10^5$ & 112.208 \\
+200 & 1000 & $3.87289\times10^4$ & $2.05198\times10^5$ & 134.727 \\
+300 & 1000 & $7.77216\times10^4$ & $4.43307\times10^5$ & 177.449 \\
+400 & 2000 & $1.28071\times10^5$ & $7.67333\times10^5$ & 216.408 \\
+500 & 1500 & $1.89365\times10^5$ & $1.17683\times10^6$ & 254.015 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-No column stabilizes. The uniform error oscillates across $\kappa$
-without a clear trend for $\alpha \in \{1,2\}$, and grows for
-$\alpha = 3$, with the last config ($\kappa=500$) consistently
-highest. No value of $\alpha$ produces an approximately constant
-column in the tested range.
+Every successive row has a larger full maximum and a larger
+logarithmically scaled maximum. Across the tenfold parameter increase,
+these quantities grow about 49-fold and 78-fold, respectively.
+The effect is not confined to the final root: excluding only that root
+leaves maxima increasing from 1106.21 to 60077.4; excluding the highest
+20\% still leaves a 4.67-fold increase. Conversely, the maximum over
+the first half of each list falls from $8.43\times10^{-6}$ to
+$2.48\times10^{-69}$. These computations separate improving low-lying
+accuracy from worsening error over an expanding window.
 
-\'Sliwi\'nski (private communication) further suggested a
-softer extended-form conjecture --- $1/\ln^\alpha(\kappa)$ for
-some $\alpha > 1$, rather than the original $\alpha = 1$.
-Table~\ref{tab:uniform_alpha} tests this directly: if the
-uniform error decayed as $1/\ln^\alpha(\kappa)$ for any fixed
-$\alpha \in \{1, 2, 3\}$, the corresponding column would be
-approximately constant across $\kappa$. None of the columns
-$\alpha \in \{1, 2, 3\}$ stabilize at HP-1000 in the tested
-range $\kappa \in [50, 500]$; values vary substantially within
-each column, and the extended-form conjecture is therefore also
-unsupported at HP-1000 in this regime, with the same caveat
-as before: the conjecture is asymptotic and our test is finite.
+\subsection*{A check independent of root refinement}
 
-\subsection{Per-Eigenvalue Convergence Profile at HP-1000}
-\label{subsec:per_eigvalue}
+The size of the full-window discrepancy can also be bounded from the
+coefficients alone. Expanding the square of the finite matrix $A$ gives
+\[
+ \operatorname{tr}(A^2)=\sum_j d_j^2
+ -\frac{2\sum_j w_jd_j^2}{S}
+ +\left(\frac{\sum_jw_jd_j}{S}\right)^2.
+\]
+Even weights and antisymmetric poles make the last term zero. The
+complete spectrum $0,\pm\mu_1,\ldots,\pm\mu_N$ therefore satisfies
+\begin{equation}
+ M_2:=\sum_{k=1}^N\mu_k^2
+ =\frac12\operatorname{tr}(A^2)
+ =\sum_{j=1}^N d_j^2-\frac{\sum_{j=-N}^N w_jd_j^2}{S}.
+ \label{eq:spectral-moment}
+\end{equation}
+This trace identity does not require the displayed coordinate matrix
+to be normal. The reverse triangle inequality for the Euclidean norm,
+together with $\|\mu-\gamma\|_2\leq\sqrt N B_N$, yields
+\begin{equation}
+ B_N\geq\max\left\{0,
+ \frac{\sqrt{M_2}-\sqrt{\sum_{k=1}^N\gamma_k^2}}{\sqrt N}\right\}.
+ \label{eq:moment-error}
+\end{equation}
 
-The HP-1000 spectrum exhibits a sharp split between converged
-and unconverged eigenvalues:
-
-\begin{table}[h]
-\centering
-\caption{Matching digits per eigenvalue index at HP-1000. Each
-entry is $-\log_{10}|\nu_k - \zeta_k|/|\zeta_k|$ computed in HP
-arithmetic. The first eigenvalues converge super-exponentially;
-the last eigenvalue ($k = N$) remains at $\lesssim 3$ matching
-digits regardless of $\kappa$.}
-\label{tab:per_eigenvalue}
-\begin{tabular}{@{}rrrrrr@{}}
+\begin{table}[htbp]
+\centering\small
+\caption{Conservative lower bounds from coefficients alone, using
+\eqref{eq:moment-error}. Integers are rounded downward. The separate
+root-bracket and coefficient enclosures for $M_2$ overlap in every row.}
+\label{tab:moment}
+\begin{tabular}{@{}lrrrrrrr@{}}
 \toprule
-$\kappa$ & $k{=}1$ & $k{=}5$ & $k{=}10$ & $k{=}20$ & $k{=}N$ \\
+$N$ & 50 & 100 & 150 & 200 & 300 & 400 & 500 \\
 \midrule
-$50$  & $160.8$ & $126.5$ & $61.2$  & $15.5$  & $2.2$ \\
-$100$ & $315.1$ & $290.3$ & $254.0$ & $135.7$ & $2.8$ \\
-$150$ & $463.3$ & $441.8$ & $412.8$ & $340.7$ & $2.6$ \\
-$200$ & $608.4$ & $588.9$ & $563.3$ & $504.9$ & $2.1$ \\
-$300$ & $893.0$ & $875.7$ & $853.9$ & $806.9$ & $2.3$ \\
-$400$ & $999.4$ & $1001$  & $1000$  & $988.8$ & $2.6$ \\
-$500$ & $999.4$ & $1001$  & $1000$  & $1000$  & $2.5$ \\
+Lower bound on $B_N$ & 525 & 1196 & 1952 & 2792 & 4633 & 6663 & 8860 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-The first eigenvalue's matching-digit count grows roughly
-linearly with $\kappa$ through $\kappa = 300$ (160 → 315 → 463
-→ 608 → 893, an additive trend of $\sim$140--150 digits per
-$\Delta\kappa = 50$), then saturates against the $1000$-digit
-working-precision ceiling at $\kappa = 400$ and beyond
-($999 \to 999$). At $\kappa = 200$ the first $20$ eigenvalues
-all match to $> 500$ digits; at $\kappa = 300$, $> 800$; at
-$\kappa = 400$, $> 988$; at $\kappa = 500$, all of the first
-$20$ are at the precision ceiling. The last eigenvalue
-($k = N$) remains at $\lesssim 3$ matching digits regardless of
-$\kappa$, confirming that the aggregate metrics in
-Table~\ref{tab:sliw_hp1000} are dominated by the unconverged
-tail at the truncation boundary, not by any intrinsic
-convergence rate of the construction.
+I evaluated these bounds locally with independent directed MPFR
+intervals, using the exact saved coefficients and the pinned reference
+ordinates rounded to each source precision. No root values enter
+\eqref{eq:moment-error}. The separate sum of squared verified root
+intervals overlaps the coefficient enclosure in all seven rows.
+Thus the large discrepancies are not explained by root refinement
+alone. This check still depends on the saved ground-state coefficients:
+it does not certify their error relative to the analytic construction.
+In particular, the weights are signed, so the ratio in
+\eqref{eq:spectral-moment} is not a positive weighted average of $d_j^2$.
+Large outlying roots cannot be rejected by an interlacing argument that
+assumes positive weights.
 
-\begin{remark}
-The roughly stable mean error visible in
-Table~\ref{tab:sliw_hp1000} (full-spectrum mean ranging from
-$0.437$ at $\kappa{=}200$ to $0.596$ at $\kappa{=}500$, a modest
-$1.36\times$ increase for a $2.5\times$ increase in $N$) is
-consistent with a slowly-growing truncation-boundary contribution:
-as $N$ grows, the fraction of eigenvalues near the boundary stays
-constant but the absolute errors of those eigenvalues vary. The
-connection to GUE-distributed zero spacings noted by
-\'Sliwi\'nski~(private communication, 2026) remains of theoretical interest.
-\end{remark}
+\subsection*{Interpretation and remaining scope}
 
-\section{Result 3: CCM is $10^{55}$ More Accurate than Naive Mellin Truncation}
-\label{sec:mellin}
+This is substantive evidence against inverse-logarithmic maximum-error
+decay in the tested range, including the suggested faster powers of
+the logarithm: the observed maximum increases rather than decreases.
+It does not establish the eventual behavior. The remaining numerical
+obligation is to propagate matrix-assembly and ground-state uncertainty
+to the spectral error, supported by independent precision refinements.
+An asymptotic disproof additionally needs an eventual lower bound or
+another analytic contradiction. The new maximum-error table replaces
+the earlier mean-based rate argument; it does not restore that argument.
 
-If a substantial fraction of CCM's accuracy could be captured by
-an integral transform of $\xi_\lambda$, that would constitute a
-candidate bridge to RH. We test this directly.
+There is also a window issue in the published supporting evidence:
+Section~4 of~\cite{Sliwinski2026} reports comparisons with the first
+1000 zeta zeros while extending $N=\kappa$ to 7500. For $N>1000$,
+that reported reference window alone cannot establish the maximum
+over all $N$ eigenvalues in Definition~2.6. A fixed window and an
+expanding all-$N$ window require separate evidence.
 
-\subsection{Naive Mellin Truncation}
+Recent work also illustrates the strength of the initial-root phenomenon.
+Groskin reports 307--329 matching digits for the first ten zeros in a
+truncated-Weil calculation at his cutoff $c=100$, $N=250$~\cite{Groskin2026}.
+That is a different finite configuration, and I do not independently
+validate those numbers here. Such initial-window accuracy is compatible
+with the separation observed above; it does not measure the all-$N$
+maximum along $\lambda=N$.
 
-We computed zeros of $\Lambda_\lambda(s)$ on the critical line
-$\Re(s) = 1/2$ via Gauss--Legendre quadrature with $500$~points
-at HP-1000 precision ($3338$~bits), followed by HP bisection.
+Two additional standard configurations, which are not on
+$\lambda=N$, now have independently checked complete movable-root
+lists and error arithmetic:
 
-\begin{table}[h]
-\centering
-\caption{Zeros of the truncated completed eta function $\Lambda_\lambda(s)$
-on the critical line, $\lambda = \sqrt{13}$, HP-1000.}
-\label{tab:lambda_sqrt13}
-\begin{tabular}{@{}rrrr@{}}
+\begin{table}[htbp]
+\centering\small
+\caption{Correction of two historical standard-row means.
+Current rows use $P=1000$. These are full movable-window statistics,
+not a matched test of \'Sliwi\'nski's asymptotic conjecture.}
+\label{tab:standard}
+\begin{tabular}{@{}rrrrr@{}}
 \toprule
-$k$ & $\Lambda_\lambda$ zero & Riemann zero $\zeta_k$ & difference \\
+$C$ & $N$ & Earlier mean & Current $A_N$ & Current $B_N$ \\
 \midrule
-$1$ & $14.797$ & $14.135$ & $0.6622$ \\
-$2$ & $22.112$ & $21.022$ & $1.090$ \\
-$3$ & $24.555$ & $25.011$ & $0.4557$ \\
-$4$ & $29.445$ & $30.425$ & $0.9803$ \\
-$5$ & $31.890$ & $32.935$ & $1.045$ \\
+13 & 120 & 1.063 & 26.61079659 & 1862.704134 \\
+100 & 500 & 1.595 & 427.60878966 & 86620.999761 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\begin{table}[h]
-\centering
-\caption{Same comparison at $\lambda = 10$ ($\lambda^2 = 100$).}
-\label{tab:lambda_10}
-\begin{tabular}{@{}rrrr@{}}
+Independent finite matrix/vector checks and complete stored-source
+root checks support the current rows. The historical route used
+reference-seeded refinement, whereas the present route discovers
+the complete positive movable-root list. The original per-root
+outputs needed to establish the precise cause of the discrepancies
+were not recovered. The earlier values must not be presented as
+reproduced current full-window means.
+
+The distinction between fixed-index convergence and a uniform
+all-window rate is central to the adverse result above. The earlier
+claim of super-exponential convergence is also withdrawn: linear
+growth of matching digits alone would indicate exponential decay
+in that parameter, not super-exponential decay.
+
+\section{Test 3: the auxiliary Mellin transforms}
+\label{sec:transforms}
+
+The two auxiliary transforms tested were
+\[
+ \omega(u)=\frac{u e^u}{(1+e^u)^2},\qquad
+ F_\lambda(s)=\int_{\lambda^{-1}}^\lambda\omega(u)u^{s-1}\,du,
+ \qquad
+ G_{C,N}(s)=\int_{\lambda^{-1}}^\lambda f_{C,N}(u)\omega(u)u^{s-1}\,du,
+\]
+where $f_{C,N}$ is the finite Weil function. The scripts call these
+the naive and weighted transforms. They scan the real part on
+$s=1/2+it$, for $5\leq t\leq55$, using 5000 intervals and 30
+requested refinement digits. The retained evaluations use $P=1000$.
+
+A real-part crossing is not sufficient for a complex zero. The
+revised checks evaluate both components at quadrature orders 500
+and 1000, normalized by the corresponding absolute-weight integral,
+with residual threshold $10^{-20}$.
+
+\begin{table}[htbp]
+\centering\small
+\caption{Observed real-part crossings and failed complex-zero checks.
+The scans do not certify completeness of the crossing or zero sets.}
+\label{tab:crossings}
+\begin{tabular}{@{}lrlrr@{}}
 \toprule
-$k$ & $\Lambda_\lambda$ zero & Riemann zero $\zeta_k$ & difference \\
+Claim & $C$ & Transform & Crossings & Failed checks \\
 \midrule
-$1$ & $13.719$ & $14.135$ & $0.416$ \\
-$2$ & $20.518$ & $21.022$ & $0.504$ \\
-$3$ & $24.603$ & $25.011$ & $0.408$ \\
-$4$ & $30.053$ & $30.425$ & $0.372$ \\
-$5$ & $32.779$ & $32.935$ & $0.156$ \\
+3a & 13 & Naive & 21 & 21 \\
+3a & 13 & Weighted ($N=120$) & 11 & 11 \\
+3b & 100 & Naive & 37 & 37 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-In both cases the absolute error is $O(0.1\text{--}1.0)$, i.e.
-\emph{less than one matching digit}. The CCM construction at the
-same $(\lambda, N)$ matches Riemann zeros to $55$~digits at
-$\lambda^2 = 13$, $460$~digits at $\lambda^2 = 100$, and $999$~digits
-at $\lambda^2 = 1000$ \cite{Andrews2026A}. The improvement factor
-is therefore $\sim 10^{55}$, $\sim 10^{460}$, and $\sim 10^{999}$
-across the three configurations.
+The quadrature-refinement checks passed, but every listed crossing
+failed the complex residual criterion. Thus the earlier accuracy
+ratio between these crossings and CCM roots compared different
+mathematical objects and is withdrawn. The negative tests concern
+these observed crossings; they do not prove that the transforms
+have no other complex zeros.
 
-\subsection{$\xi$-Weighted Mellin Transform}
+\subsection*{A fixed-cutoff obstruction}
 
-If $\xi_\lambda$ encodes essential information about Riemann
-zeros, weighting the Mellin integrand by $f_\lambda(u)$ might
-recover some of the CCM accuracy. We test this with the
-$\xi$-weighted variant $G(s)$ at $\lambda^2 = 13$ at HP-1000
-($3338$-bit) precision over the scan range $\Im(s)\in[5,55]$:
+The untruncated weight is a classical zeta representation~\cite{DLMF}:
+\begin{equation}
+ F_\infty(s)=\int_0^\infty u^s\frac{e^u}{(1+e^u)^2}\,du
+ =\Gamma(s+1)(1-2^{1-s})\zeta(s),\qquad \Re s>0.
+ \label{eq:full-mellin}
+\end{equation}
+The apparent singularity at $s=1$ is removable. On $\Re s=1/2$ both prefactors
+are nonzero, so this integral has exactly the zeta zeros on that line.
+Hard truncation changes that conclusion.
 
-\begin{table}[h]
-\centering
-\caption{$\xi$-weighted Mellin $G(s)$ vs naive $\Lambda_\lambda$ at
-$\lambda = \sqrt{13}$, $N = 120$, full HP-1000 arithmetic
-($3338$-bit precision, $500$-point Gauss--Legendre quadrature,
-$5000$ scan points). Eleven Riemann zeros lie in the scan range.}
-\label{tab:xi_weighted}
-\setlength{\tabcolsep}{4pt}
-\small
-\begin{tabular}{@{}rrrrrrr@{}}
-\toprule
-$k$ & $\Lambda_\lambda$ zero & $G(s)$ zero & Riemann zero & $\Lambda_\lambda$ error & $G$ error & improvement \\
-\midrule
-$1$  & $14.797$ & $13.930$ & $14.135$ & $0.6622$ & $0.2045$ & $3.238\times$  \\
-$2$  & $22.112$ & $20.815$ & $21.022$ & $1.090$  & $0.2067$ & $5.275\times$  \\
-$3$  & $24.555$ & $25.152$ & $25.011$ & $0.4557$ & $0.1411$ & $3.230\times$  \\
-$4$  & $29.445$ & $30.336$ & $30.425$ & $0.9803$ & $0.08852$ & $11.07\times$  \\
-$5$  & $31.890$ & $33.399$ & $32.935$ & $1.045$  & $0.4636$ & $2.253\times$  \\
-$6$  & $36.784$ & $37.725$ & $37.586$ & $0.8026$ & $0.1389$ & $5.779\times$  \\
-$7$  & $41.678$ & $41.322$ & $40.919$ & $0.7595$ & $0.4034$ & $1.883\times$  \\
-$8$  & $44.126$ & $43.829$ & $43.327$ & $0.7989$ & $0.5018$ & $1.592\times$  \\
-$9$  & $49.022$ & $48.162$ & $48.005$ & $1.017$  & $0.1570$ & $6.479\times$  \\
-$10$ & $49.022$ & $50.585$ & $49.774$ & $0.7519$ & $0.8107$ & $0.9274\times$ \\
-$11$ & $53.919$ & $53.480$ & $52.970$ & $0.9482$ & $0.4384$ & $2.163\times$  \\
-\bottomrule
-\end{tabular}
-\end{table}
+\noindent\textbf{Proposition (fixed-cutoff obstruction).}
+At $C=13$ and $C=100$, $F_\lambda$ has no critical-line zeros for
+$|t|>100$ and $|t|>2000$, respectively. For either fixed cutoff,
+the naive and nonzero finite cosine-weighted transforms have only
+finitely many critical-line zeros.
 
-Mean $G$ error: $0.3231$. Mean $\Lambda_\lambda$ error: $0.8464$.
-Mean improvement factor: $\mathbf{2.619\times}$.
+\smallskip
+\noindent\emph{Proof.}
+Set $L=\log\lambda$, $h(u)=e^u/(1+e^u)^2$, and
+$q(x)=e^{3x/2}h(e^x)$. The naive transform is
+$\int_{-L}^L q(x)e^{itx}\,dx$. Two integrations by parts give
+\begin{equation}
+ |F_\lambda(1/2+it)|\geq\frac{\delta}{|t|}-\frac{M}{t^2},\quad
+ \delta=|q(L)-q(-L)|,\quad
+ M=|q'(L)|+|q'(-L)|+\int_{-L}^L|q''(x)|\,dx.
+ \label{eq:mellin-boundary}
+\end{equation}
+Writing $u=e^x$ and $r=\tanh(u/2)$ gives
+$q'=q(3/2-ur)$ and
+$q''=q((3/2-ur)^2-ur-u^2(1-r^2)/2)$.
+Since $0<r<1$ and $h(u)\leq e^{-u}$,
+\[
+ M\leq B_\lambda:=
+ q(-L)(3/2+\lambda^{-1})+q(L)(3/2+\lambda)
+ +\frac{111\sqrt{\pi}}{16}.
+\]
+The last term integrates the upper bound
+$u^{1/2}e^{-u}(9/4+4u+3u^2/2)$ over $(0,\infty)$.
+Outward rounding at both 256 and 512 bits gives
+\[
+\begin{array}{c|cc}
+ C & \text{enclosure for }\delta & B_\lambda/\delta\text{ upper bound} \\
+ \hline
+ 13 & [0.14049,\,0.14050] & 95 \\
+ 100 & [0.006450,\,0.006451] & 1911
+\end{array}
+\]
+so~\eqref{eq:mellin-boundary} proves the stated conservative thresholds.
 
-\begin{remark}[Zero counts on the critical line]
-\label{rem:zero_counts}
-The $\Lambda_\lambda$ scan over $\Im(s)\in[5,55]$ at $\lambda^2=13$
-finds $21$ zeros, while the $\xi$-weighted $G(s)$ scan over the
-same range finds $11$ zeros --- exactly the count of Riemann zeros
-in the range. The unweighted truncation
-introduces approximately ten spurious zeros that are not present
-in the weighted variant. This is consistent with $\xi$-weighting
-suppressing oscillatory artefacts of the bare integrand $\omega(t)$
-near the truncation endpoints, while the $11$ zeros that survive
-align (modulo the residual $O(0.1\text{--}0.5)$ errors above) with
-the actual Riemann zeros.
-\end{remark}
+For $p(x)=f_{C,N}(e^x)$, a nonzero finite cosine polynomial in
+$j\pi x/L$, endpoint derivatives agree and odd ones vanish. Analyticity
+gives a first nonzero endpoint derivative of finite even order $k$.
+The lower endpoint derivatives of $pq$ vanish. Integrating $k+2$ times
+therefore gives a leading modulus at least
+$|p^{(k)}(L)|\delta/|t|^{k+1}$ and remainder $O(|t|^{-k-2})$.
+Both transforms are eventually nonzero, entire, and not identically
+zero; only finitely many critical-line zeros remain.\hfill$\square$
 
-The $\xi$-weighting helps modestly but does not approach the
-$10^{55}$ accuracy of the full CCM construction. The
-HP-1000 measurement reproduces the previously reported
-$2.619\times$ improvement to four significant figures, confirming
-that the residual $O(0.1\text{--}0.5)$ errors are mathematical in
-nature, not numerical artefacts: at higher precision the same
-answer emerges.
+These fixed surrogates cannot reproduce the unbounded sequence of
+zeta critical-line zeros. This does not exclude off-line zeros,
+certify the entire scanned interval, quantify a weighted threshold,
+or address $\lambda$ or $N$ growing with height.
 
-\subsection{Interpretation}
+\subsection*{What increasing the cutoff does recover}
 
-The $10^{55}$ improvement factor of CCM over Mellin truncation
-quantifies what the Weil quadratic form's algebraic structure
-contributes \emph{beyond} integration:
-\begin{itemize}
-\item The eigenvalue problem $\tau\xi = \varepsilon_N\xi$ extracts
-the smallest eigenpair with full precision available.
-\item The rational function $R(z) = \xi_0 + 2z\sum_j \xi_j/(z - j^2)$
-extracts zeros via an algebraic mechanism whose accuracy is bounded
-only by $\varepsilon_N$.
-\item Neither operation has an integral-transform analogue that
-captures comparable information from $\xi_\lambda$ alone.
-\end{itemize}
+The obstruction is compatible with convergence of the transform values.
+For every $\lambda>1$ and real $t$, the omitted tails obey
+\begin{equation}
+ \left|F_\infty(1/2+it)-F_\lambda(1/2+it)\right|
+ \leq \frac{1}{6\lambda^{3/2}}
+ +\sqrt\lambda\,e^{-\lambda}\left(1+\frac{1}{2\lambda}\right).
+ \label{eq:mellin-tails}
+\end{equation}
+Indeed, $h(u)\leq1/4$ bounds the lower tail by
+$\int_0^{1/\lambda}u^{1/2}/4\,du=1/(6\lambda^{3/2})$.
+For the upper tail, use $h(u)\leq e^{-u}$ and the concavity bound
+$\sqrt{\lambda+v}\leq\sqrt\lambda+v/(2\sqrt\lambda)$, then integrate
+against $e^{-v}$ for $v\geq0$. Neither estimate depends on $t$.
+For example, the right-hand side is less than $0.005422$ at
+$\lambda=10$, and less than $0.000167$ at $\lambda=100$.
 
-The implication for the bridge problem is sharp: no integral
-transform of $\xi_\lambda$ tested here approaches the accuracy
-CCM exhibits, and the structural argument above (eigenvalues
-together with rational-function zeros lose information under
-integration) suggests this generalizes. The bridge must engage
-with the algebraic mechanism (eigenvalue problem followed by
-rational-function zeros).
+At any critical-line zeta zero, \eqref{eq:full-mellin} makes the full
+integral zero, so \eqref{eq:mellin-tails} bounds the truncated integral's
+residual there. A small residual does not force an exact zero on the
+same line. Hence two facts coexist: increasing $\lambda$ recovers the
+full transform uniformly in absolute value on that line, while fixing
+either tested cutoff eventually excludes critical-line zeros.
+The bound gives a sufficient accuracy budget for transform values;
+it does not control zero locations. Such control would require, for
+example, a contour estimate comparing the tail with the full transform
+away from its zeros.
 
-\section{Discussion}
-
-\subsection{Status of the Two Quantitative Bridges}
-
-Conjecture~\ref{conj:lemma72} proposed an analytic bridge from
-$\xi_\lambda$ to the Riemann zeros via prolate-wave approximation
-at rate $O(\lambda^{-2})$. Our high-precision data falsifies the
-predicted rate: $\text{rel}\times\lambda^2$ grows by $\sim
-1.116 \times 10^6$ across $\lambda^2 \in [13, 1000]$. At $\lambda^2 =
-1000$ the residual is $99.9\%$ of $\xi_\lambda$ itself, with the
-optimal scalar $c$ at exponential magnitude ($\sim 4.567\times
-10^{501}$); the educated guess has essentially no correlation
-with the actual eigenvector at large $\lambda$.
-
-Conjecture~\ref{conj:sliwinski} proposed an asymptotic rate
-$\varepsilon \sim 1/\ln\lambda$ in the regime $\kappa = N =
-\lambda$. At HP-1000 ($3338$-bit) across $\kappa \in [50, 500]$
-(Section~\ref{subsec:sliw_hp1000}), $\varepsilon\cdot\ln\lambda$
-ranges over $[2.316, 3.704]$ (full-spectrum, $1.600\times$ spread)
-and $[1.041, 1.853]$ (trimmed-interior, $1.600\times$ first/last).
-Neither trajectory is consistent with the conjectural limit
-$\varepsilon(\kappa)\cdot\ln(\kappa) \to C$. Theorem~3.1
-(\'Sliwi\'nski's lower bound) holds with substantial margin at
-all configurations ($4.163\times$--$14.82\times$ ratios).
-
-\subsection{The Algebraic Picture}
-
-The per-eigenvalue analysis (Table~\ref{tab:per_eigenvalue})
-reveals that the CCM construction does not have a convergence
-rate problem for the first eigenvalues. In the \'Sliwi\'nski
-regime ($\kappa = N = \lambda$), the first eigenvalue matches
-the first Riemann zero to \emph{$160.8$~digits at $\kappa = 50$
-and $608.4$~digits at $\kappa = 200$}, with the matching-digit
-count growing roughly linearly in $\kappa$ through $\kappa =
-300$ (additive trend $\sim$140--150 digits per $\Delta\kappa =
-50$) before saturating against the $1000$-digit working-precision
-ceiling at $\kappa = 400$ and beyond. At $\kappa = 200$, the
-first $20$ eigenvalues all match Riemann zeros to ${>}500$
-digits; at $\kappa = 300$, ${>}800$; at $\kappa = 400$ and
-beyond, the first $20$ are at the precision ceiling.
-
-The construction's accuracy on these eigenvalues is limited
-only by arithmetic precision, not by any intrinsic convergence
-rate. No rate of the form $1/\ln^\alpha(\kappa)$ describes this
-behavior --- it is super-exponential convergence that immediately
-saturates at whatever precision is available.
-
-The ``slow convergence'' measured by the mean and uniform errors
-comes entirely from the \emph{last} eigenvalue ($k = N$), which
-remains at ${\sim}1$--$3$ matching digits regardless of $\kappa$
-even at HP-1000 working precision. This is a structural property
-of the matrix's truncation boundary, not of the working precision.
-The correct question is not ``what is the convergence rate?'' but
-rather ``how many eigenvalues converge to full precision as
-$\kappa$ grows?'' The HP-1000 per-eigenvalue table shows this
-count growing rapidly with $\kappa$; characterizing this growth
-precisely --- and proving it unbounded --- remains open.
-
-Combined with the $10^{55}$ improvement of CCM over naive Mellin
-truncation, the picture that emerges is:
-
-\begin{itemize}
-\item The CCM construction's accuracy is \emph{algebraic}, not
-analytic. It comes from solving an eigenvalue problem on a
-specific symmetric matrix, then finding zeros of a rational
-function determined by the eigenvector.
-\item Neither step has an integral-transform analogue that
-preserves the full information. Hence no Mellin-style bridge can
-recover comparable accuracy.
-\item The candidates studied in the literature (prolate
-approximation, inverse-logarithmic rate, naive or $\xi$-weighted
-Mellin) all fall short by orders of magnitude when tested at
-high precision.
-\end{itemize}
-
-The construction works (Step~1 of the CCM proof strategy is
-verified to $999$~digits at $\lambda^2{=}1000$, $N{=}800$, HP-1000
-in~\cite{Andrews2026A}) but the
-quantitative bridges proposed so far do not. A successful
-proof of RH via this route requires a new framework that engages
-with the algebraic structure directly and predicts a rate
-consistent with high-precision data.
-
-\subsection{What Remains}
-
-Two directions remain open:
-\begin{enumerate}
-\item A different rate prediction in the $\kappa = N = \lambda$
-regime, consistent with our $\varepsilon \sim \sqrt{N}$
-observation, would refine \'Sliwi\'nski's framework.
-\item A new bridge construction that does \emph{not} go through
-prolate waves or Mellin transforms could complete the CCM proof
-strategy. Candidate frameworks in the literature (CCM 2022 PNAS
-Sonin space, Yakaboylu's Hilbert--P\'olya Hamiltonian) share
-operators with CCM 2025 but do not yet provide explicit bridges
-from~$\xi_\lambda$.
-\end{enumerate}
+CCM Proposition~5.9 and Theorem~5.10 use a different multiplicative
+Fourier transform representing the secular spectral information under
+their hypotheses. Claim~3a's same-source Fourier/secular control passed.
+Neither this obstruction nor the crossing tests support the earlier
+claim that CCM accuracy cannot be explained by an integral transform.
 
 \section{Conclusion}
 
-We have empirically tested two published quantitative predictions
-about the CCM zeta spectral triple's convergence rate at high
-precision. CCM Lemma~7.2 fails by a factor of approximately
-$1.116\times 10^6$ in $\text{rel}\times\lambda^2$ across $\lambda^2
-\in [13, 1000]$. \'Sliwi\'nski's Conjecture~4.1 is empirically
-unsupported at HP-1000: across $\kappa = N = \lambda \in [50, 500]$,
-$\varepsilon\cdot\ln\lambda$ ranges over $[2.316, 3.704]$
-(full-spectrum) and $[1.041, 1.853]$ (trimmed-interior, a
-$1.600\times$ first/last change), neither metric approaching a single nonzero
-constant. Theorem~3.1 (\'Sliwi\'nski's lower bound) holds with
-substantial margin throughout. The CCM construction is
-approximately $10^{55}$ more accurate than naive Mellin
-truncation, and $\xi$-weighting the Mellin integrand recovers
-only a $2.6\times$ improvement (verified at HP-1000).
-
-The per-eigenvalue analysis at HP-1000 reveals a more nuanced
-picture than simple falsification. The first eigenvalues converge
-\emph{super-exponentially} --- the first Riemann zero is matched
-to $160.8$~digits at $\kappa = 50$ and to $608.4$~digits at
-$\kappa = 200$, with linear growth in $\kappa$ through $\kappa
-= 300$ before saturating against the $1000$-digit
-working-precision ceiling at $\kappa = 400$. The aggregate error metrics (mean,
-uniform) are dominated by high-index eigenvalues lying at the
-matrix's truncation boundary. Even at HP-1000 the last
-eigenvalue ($k = N$) remains at $\sim 1$--$3$ matching digits
-regardless of $\kappa$, indicating a structural limit at the
-boundary rather than a numerical one. The $\sqrt{N}$ growth of
-the mean error visible in our data is consistent with a CLT
-effect on GUE-distributed zero spacings.
-
-The construction itself is not in question --- it works
-extraordinarily well on the first eigenvalues. What is in
-question is the route from $\xi_\lambda$ to the Riemann
-Hypothesis. The correct convergence question is: how does the
-number of fully-converged eigenvalues grow with $\kappa$? Our
-HP-1000 data shows the first ${\sim}20$ eigenvalues all matching
-Riemann zeros to ${>}500$ digits at $\kappa = 200$, with the
-count of fully-converged eigenvalues growing rapidly with
-$\kappa$; characterizing this growth precisely --- and proving
-it unbounded --- remains open.
+The revised results show close finite Weil--prolate agreement and a
+definite obstruction for the tested fixed Mellin cutoffs, whose
+untruncated counterpart represents zeta exactly.
+All seven checked finite spectra give an adverse trend in the specified
+expanding-window maximum, even after excluding the highest 20\% of roots.
+The coefficient-based moment bounds independently rule out small
+full-window errors for those same saved sources.
+The proposed uniform decay is empirically unsupported in this range.
+Independent analytic source control and an eventual lower bound are
+the next steps toward a stronger conclusion.
 
 \section*{Acknowledgments}
 
-The author thanks Professor Henri Moscovici (The Ohio State
-University) and Professor Nigel Higson (The Pennsylvania State
-University) for correspondence and encouragement. Professor
-Moscovici kindly forwarded this work to Professor Alain Connes.
+I thank Professors Henri Moscovici and Nigel Higson for correspondence
+and encouragement. Professor Moscovici forwarded the earlier work to
+Professor Alain Connes; this does not imply endorsement.
+I also thank Dominik \'Sliwi\'nski for clarifying the intended error
+observable in correspondence.
 
-\section*{Data and Code Availability}
+\newpage
+\section*{Statement on the Use of AI Tools}
 
-The complete source code, reference data, and reproduction
-scripts are available at:\\
-{\small\url{https://github.com/TeamXcelerator/ccm-convergence-rate-falsifications}}
+In accordance with current publication practices concerning authors'
+use of generative AI tools, the author discloses that Anthropic's
+Claude and OpenAI's Codex served as aids in preparing the exposition
+and the Rust implementation code, to specifications set by the author.
+AI assistance was used to improve prose formatting and readability,
+gather research material, propose candidate arguments, and validate
+calculations; all such output was reviewed by the author. The author
+originated, directed, and conducted every computational experiment
+presented here. The mathematical development was led by the author
+with assistance from AI. The author bears full responsibility for the
+contents of this manuscript.
 
-\noindent The shared mathematical library (Xcelerator Toolkit) is at:\\
-{\small\url{https://github.com/TeamXcelerator/xcelerator-toolkit}}
+\section*{Data and code availability}
+
+The \href{https://github.com/TeamXcelerator/ccm-convergence-rate-falsifications}{source repository}
+provides the scripts and \path{docs/manuscript-results.json} binding
+these tables to retained evidence. Full audit payloads are maintained
+separately. This version revises the earlier published paper.
 
 \begin{thebibliography}{9}
-
 \bibitem{CCM2025}
-A.~Connes, C.~Consani, H.~Moscovici,
-\emph{Zeta Spectral Triples},
-arXiv:2511.22755 (2025).
+A.~Connes, C.~Consani, and H.~Moscovici,
+\emph{Zeta Spectral Triples}, arXiv:2511.22755v1 (2025).
+\url{https://arxiv.org/abs/2511.22755}.
 
 \bibitem{Sliwinski2026}
 D.~\'Sliwi\'nski,
-\emph{Spectral Analysis of the $D_{\log}^{(\lambda, N)}$ Operators},
-arXiv:2601.12133 (2026).
+\emph{Spectral Analysis of the $D_{\log}^{(\lambda,N)}$ Operators},
+arXiv:2601.12133v1 (2026).
+\url{https://arxiv.org/abs/2601.12133}.
 
-\bibitem{Andrews2026A}
-R.~Andrews, Jr.,
-\emph{Independent Reproduction and Convergence Analysis of the
-Connes--Consani--Moscovici Zeta Spectral Triple}.
-GitHub: TeamXcelerator/ccm-reproduction-and-convergence (2026).
+\bibitem{Dunster2017}
+T.~M.~Dunster,
+\emph{Asymptotics of Prolate Spheroidal Wave Functions},
+Journal of Classical Analysis \textbf{11} (2017), 1--21.
+\url{https://doi.org/10.7153/jca-11-01}.
 
-\bibitem{Yakaboylu2024}
-E.~Yakaboylu,
-\emph{Hamiltonian for the Hilbert--P\'olya Conjecture},
-J.\ Phys.\ A: Math.\ Theor.\ 57, 235204 (2024).
-arXiv:2309.00405; see also arXiv:2408.15135.
+\bibitem{Groskin2026}
+A.~Groskin,
+\emph{High-Precision Approximation of Riemann Zeros via the Truncated Weil Form},
+arXiv:2605.20224v4 (2026).
+\url{https://arxiv.org/abs/2605.20224v4}.
 
-\bibitem{Odlyzko}
-A.~M.~Odlyzko,
-\emph{Tables of zeros of the Riemann zeta function},
-\url{http://www.dtc.umn.edu/~odlyzko/zeta_tables/}.
-
-\bibitem{PARI}
-The PARI Group,
-\emph{PARI/GP version 2.15},
-Universit\'e de Bordeaux, 2023.
-\url{http://pari.math.u-bordeaux.fr/}.
-
+\bibitem{DLMF}
+NIST Digital Library of Mathematical Functions,
+Eq.~25.5.4, \emph{Integral Representations of the Riemann Zeta Function}.
+\url{https://dlmf.nist.gov/25.5.E4}; \S25.10(i), \emph{Zeros},
+\url{https://dlmf.nist.gov/25.10.i} (accessed November 3, 2026).
 \end{thebibliography}
-
 \end{document}
