@@ -3,8 +3,8 @@
 [Repository overview](../README.md) · [Individual scripts](../scripts/README.md) ·
 [Research evidence](RESEARCH_EVIDENCE.md) · [Validation](VALIDATION.md)
 
-The v2.1.0 harness pins Toolkit v0.15.0 at
-`5d50b5b862b075a43e7c2c9ccedd29b568a32808`. The manuscript remains the
+The v2.1.0 harness pins Toolkit v0.17.0 at
+`ea546f0d9fa134275c15d47fc461012c4f21dbc6`. The manuscript remains the
 v2.0 edition. Software validation is not a
 completed rerun of the manuscript tables.
 
@@ -49,6 +49,45 @@ configuration, for example:
 ```bash
 bash scripts/claim2_standard_ccm.sh --lambda-squares 13 --n-values 120
 ```
+
+## Current execution and publication policy
+
+Ultra retains applicable single-run diagnostics. Configuration comparisons and
+the dimension/precision cohort analysis are deferred until compatible runs
+exist. Sector-gap certificates are off by default; the explicit
+`--capture-sector-gap-certificate` option requests them intentionally.
+
+The finite-difference experiments retain the explicit finite-Dirichlet
+prolate route. Toolkit 0.17's ordinary prolate API instead uses bounded
+Legendre truncation; changing to it would be a different experiment, not a
+bit-identical speedup of these grid claims.
+
+`--publish` enables publication from an individual script. Only
+`claim1a_lambda13_grid4001.sh` selects both public and private destinations;
+every other script selects private destinations. The Toolkit continues to
+restrict private-only and target-derived artifact families to private storage.
+Without `--publish`, the scripts do not execute remote publication.
+
+`XC_CLAIM_MEMORY_GIB` sets the working budget (default 32 GiB for direct local
+scripts). `XC_CLAIM_STREAM_SCALAR_BYTES` separately controls cumulative streamed
+endpoint text (default 256 GiB); it is not a simultaneous RAM allocation.
+An external launcher must check available host/container memory before using
+a larger budget. `--parallel-gl-roots` enables the experimental native-Linux
+schedule; it is unsupported on WSL. CUDA selection and device enumeration are
+owned by the Toolkit runtime; arbitrary-precision values are not replaced by
+binary64 approximations.
+
+An optional `XC_RESEARCH_PREPARER` JSON command supplies external inputs only
+after the primary sources exist. Inputs pass the Toolkit's source join before
+capture. The preparer must support the requested cutoff: support for C=1000
+does not establish support for the C=N² configurations reaching C=250000.
+Its progress, output, failure, and mathematical qualifications are retained.
+
+`--validate-only` checks a configuration without computation. A publication
+retry uses `publish-staged --staging-root PATH` with the original explicit
+author, destination, execution, and staging environment; it does not run a
+solver. Stage timings distinguish primary acquisition, experiment measurement,
+individual capture, and publication.
 
 ## Directories and local cache
 
@@ -233,7 +272,7 @@ No interval-certified ordinal or asymptotic theorem is claimed by this harness.
 
 ## Computational changes
 
-Response capture uses the v0.15.0 performance amendment: fixed root quantities
+Response capture uses the pinned v0.17.0 implementation: fixed root quantities
 are prepared once, independent events and root batches run in parallel, and
 fresh output uses its completed producer checks plus an exact process-local
 payload seal. Cached responses retain numerical replay. Large response phases
@@ -241,7 +280,7 @@ report event progress. Artifact formats and identities are unchanged; existing
 results need no flush or repair. A running executable continues to use its
 original revision. Complete-root isolation before root-window reuse remains a
 separate acquisition cost. See the Toolkit
-[performance and validation guide](https://github.com/TeamXcelerator/xcelerator-toolkit/blob/v0.15.0/docs/CCM_RESPONSE_PERFORMANCE.md).
+[performance and validation guide](https://github.com/TeamXcelerator/xcelerator-toolkit/blob/ea546f0d9fa134275c15d47fc461012c4f21dbc6/docs/CCM_RESPONSE_PERFORMANCE.md).
 
 Fourier reconstruction uses a cosine recurrence. Mellin quadrature nodes,
 weights, amplitudes and Weil samples are computed once per quadrature order;
@@ -254,10 +293,10 @@ are recorded. No unmeasured speedup factor is claimed.
 The pinned Toolkit reports batch sizes, existing bytes reused, elapsed push
 time and progress heartbeats during long Git operations. Its artifact push
 policy avoids delta searches on already-compressed archives. See the
-[Toolkit publication guide](https://github.com/TeamXcelerator/xcelerator-toolkit/blob/v0.15.0/docs/PUBLICATION_PERFORMANCE.md)
+[Toolkit publication guide](https://github.com/TeamXcelerator/xcelerator-toolkit/blob/ea546f0d9fa134275c15d47fc461012c4f21dbc6/docs/PUBLICATION_PERFORMANCE.md)
 for measured scope and recovery behavior. This transport amendment does not
 require recalculating completed experiments or clearing their caches. Preserve
 run journals and staging if publication is interrupted. An already-running
 executable continues using its original implementation until it exits.
 
-Large encoded artifacts can exceed the default workstation transfer ceiling. Set `XC_RESOURCE_POLICY_FILE` to an explicit resource policy appropriate to the machine; see the Toolkit [publication recovery guide](https://github.com/TeamXcelerator/xcelerator-toolkit/blob/v0.15.0/docs/PUBLICATION_RECOVERY.md). If packaging fails after local retention, recover the exact saved artifact without repeating the numerical claim. Preserve the original capture receipt and record recovery separately.
+Large encoded artifacts can exceed the default workstation transfer ceiling. Set `XC_RESOURCE_POLICY_FILE` to an explicit resource policy appropriate to the machine; see the Toolkit [publication recovery guide](https://github.com/TeamXcelerator/xcelerator-toolkit/blob/ea546f0d9fa134275c15d47fc461012c4f21dbc6/docs/PUBLICATION_RECOVERY.md). If packaging fails after local retention, recover the exact saved artifact without repeating the numerical claim. Preserve the original capture receipt and record recovery separately.

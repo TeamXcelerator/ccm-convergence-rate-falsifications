@@ -106,7 +106,7 @@ fn prolate_runs_at_small_lambda_hp() {
     let prec_bits: u32 = 256;
     // Construct the cutoff at the requested precision.
     let lambda = rug::Float::with_val(prec_bits, 13).sqrt();
-    let result = xc_spectral::prolate::hp::compute_k_lambda(
+    let result = xc_spectral::prolate::hp::compute_k_lambda_finite_dirichlet(
         &lambda,
         201,
         32,

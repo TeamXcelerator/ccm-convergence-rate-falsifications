@@ -36,6 +36,7 @@ pub fn implementation_digest() -> xc_cache::ContentDigest {
         include_str!("experiments.rs"),
         include_str!("transforms.rs"),
         include_str!("numerics.rs"),
+        include_str!("preparation.rs"),
         include_str!("../Cargo.toml"),
         include_str!("../Cargo.lock"),
     ];

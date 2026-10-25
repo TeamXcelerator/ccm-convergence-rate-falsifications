@@ -8,15 +8,20 @@ experiments and records their numerical evidence.
 **Author:** Ronnie Andrews, Jr.<br>
 **ORCID:** [0009-0003-9724-3104](https://orcid.org/0009-0003-9724-3104)<br>
 **Contact:** [randrewsmath@gmail.com](mailto:randrewsmath@gmail.com)<br>
-**Software release:** v2.1 (Xcelerator Toolkit v0.15.0)<br>
+**Software candidate:** v2.1 retest update (Xcelerator Toolkit v0.17.0)<br>
 **Manuscript:** v2.0
 
-The software release provides individual experiment scripts, Ultra research
+The candidate provides individual experiment scripts, Ultra research
 capture and explicit result summaries. [Cargo.toml](Cargo.toml) and
 [Cargo.lock](Cargo.lock) pin Toolkit revision
-`5d50b5b862b075a43e7c2c9ccedd29b568a32808`. The manuscript and software have
+`ea546f0d9fa134275c15d47fc461012c4f21dbc6`. The manuscript and software have
 separate version histories; software qualification is not a completed rerun
 or a revision of the manuscript's conclusions.
+
+Finite-Dirichlet comparisons reuse recovered prolate modes and sampled profiles
+as well as the complete spectrum. Independent Mellin crossing refinements run
+in parallel with the same per-bracket arithmetic and ordered results. These
+changes preserve the experiment's finite model and numerical output.
 
 ## Read the paper and evidence
 

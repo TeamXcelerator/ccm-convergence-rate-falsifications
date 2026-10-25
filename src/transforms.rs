@@ -3,7 +3,7 @@ use crate::{
     numerics::{decimal, even_defect, fourier_closed, state_value, text},
     Command, MellinMode,
 };
-use anyhow::{ensure, Result};
+use anyhow::{ensure, Context, Result};
 use rayon::prelude::*;
 use rug::Float;
 use serde_json::json;
@@ -81,7 +81,9 @@ impl Quadrature {
             naive,
             weighted,
             fourier,
-            manifest: rule.artifact_manifest,
+            manifest: rule
+                .artifact_manifest
+                .context("quadrature artifact identity missing")?,
             p,
         })
     }
@@ -127,42 +129,49 @@ where
         .into_par_iter()
         .map(|i| f(&point(i)))
         .collect::<Vec<_>>();
-    let mut roots = Vec::new();
-    for i in 0..=steps {
-        if values[i] == 0 {
-            roots.push(point(i));
-        }
-        if i == 0
-            || values[i] == 0
-            || values[i - 1] == 0
-            || values[i].is_sign_negative() == values[i - 1].is_sign_negative()
-        {
-            continue;
-        }
-        let mut a = point(i - 1);
-        let mut b = point(i);
-        let sign = values[i - 1].is_sign_negative();
-        for _ in 0..iterations {
-            let mut mid = a.clone();
-            mid += &b;
-            mid /= 2;
-            let value = f(&mid);
-            if value == 0 {
-                a = mid.clone();
-                b = mid;
-                break;
+    // Each index contributes at most one crossing. Indexed collection retains
+    // the original scan order while independent brackets are refined in parallel;
+    // every bracket keeps its original sequential MPFR arithmetic.
+    let mut roots = (0..=steps)
+        .into_par_iter()
+        .map(|i| {
+            if values[i] == 0 {
+                return Some(point(i));
             }
-            if value.is_sign_negative() == sign {
-                a = mid;
-            } else {
-                b = mid;
+            if i == 0
+                || values[i - 1] == 0
+                || values[i].is_sign_negative() == values[i - 1].is_sign_negative()
+            {
+                return None;
             }
-        }
-        let mut root = Float::with_val(p, a);
-        root += b;
-        root /= 2;
-        roots.push(root);
-    }
+            let mut a = point(i - 1);
+            let mut b = point(i);
+            let sign = values[i - 1].is_sign_negative();
+            for _ in 0..iterations {
+                let mut mid = a.clone();
+                mid += &b;
+                mid /= 2;
+                let value = f(&mid);
+                if value == 0 {
+                    a = mid.clone();
+                    b = mid;
+                    break;
+                }
+                if value.is_sign_negative() == sign {
+                    a = mid;
+                } else {
+                    b = mid;
+                }
+            }
+            let mut root = Float::with_val(p, a);
+            root += b;
+            root /= 2;
+            Some(root)
+        })
+        .collect::<Vec<_>>()
+        .into_iter()
+        .flatten()
+        .collect::<Vec<_>>();
     roots.sort_by(|a, b| a.partial_cmp(b).unwrap());
     roots.dedup();
     roots
@@ -375,6 +384,172 @@ pub fn run(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    // The pre-optimization route, with a serial scan as well as serial
+    // refinements, is retained as an independent scheduling oracle.
+    fn sequential_crossings<F>(
+        f: F,
+        lo: &Float,
+        hi: &Float,
+        steps: usize,
+        iterations: u32,
+    ) -> Vec<Float>
+    where
+        F: Fn(&Float) -> Float,
+    {
+        let p = lo.prec();
+        let mut spacing = hi.clone();
+        spacing -= lo;
+        spacing /= steps;
+        let point = |i: usize| {
+            let mut t = spacing.clone();
+            t *= i;
+            t += lo;
+            t
+        };
+        let values = (0..=steps).map(|i| f(&point(i))).collect::<Vec<_>>();
+        let mut roots = Vec::new();
+        for i in 0..=steps {
+            if values[i] == 0 {
+                roots.push(point(i));
+            }
+            if i == 0
+                || values[i] == 0
+                || values[i - 1] == 0
+                || values[i].is_sign_negative() == values[i - 1].is_sign_negative()
+            {
+                continue;
+            }
+            let mut a = point(i - 1);
+            let mut b = point(i);
+            let sign = values[i - 1].is_sign_negative();
+            for _ in 0..iterations {
+                let mut mid = a.clone();
+                mid += &b;
+                mid /= 2;
+                let value = f(&mid);
+                if value == 0 {
+                    a = mid.clone();
+                    b = mid;
+                    break;
+                }
+                if value.is_sign_negative() == sign {
+                    a = mid;
+                } else {
+                    b = mid;
+                }
+            }
+            let mut root = Float::with_val(p, a);
+            root += b;
+            root /= 2;
+            roots.push(root);
+        }
+        roots.sort_by(|a, b| a.partial_cmp(b).unwrap());
+        roots.dedup();
+        roots
+    }
+
+    fn assert_same_crossings(actual: &[Float], expected: &[Float]) {
+        assert_eq!(actual.len(), expected.len());
+        for (actual, expected) in actual.iter().zip(expected) {
+            assert_eq!(actual, expected);
+            assert_eq!(actual.prec(), expected.prec());
+            assert_eq!(actual.is_sign_negative(), expected.is_sign_negative());
+            assert_eq!(text(actual), text(expected));
+        }
+    }
+
+    #[test]
+    fn parallel_refinements_match_sequential_mpfr_results() {
+        for workers in [1, 4] {
+            let pool = rayon::ThreadPoolBuilder::new()
+                .num_threads(workers)
+                .build()
+                .unwrap();
+            for p in [80, 192] {
+                let lo = Float::with_val(p, -1);
+                let hi = Float::with_val(p, 1);
+                let f = |t: &Float| {
+                    let mut value = Float::with_val(p, 1);
+                    for root in [-0.75, -0.375, 0.0, 0.3125, 0.875] {
+                        let mut factor = t.clone();
+                        factor -= root;
+                        value *= factor;
+                    }
+                    value
+                };
+                for steps in [7, 16, 37] {
+                    for iterations in [0, 1, 13, 140] {
+                        let expected = sequential_crossings(f, &lo, &hi, steps, iterations);
+                        let actual = pool.install(|| crossings(f, &lo, &hi, steps, iterations));
+                        assert_same_crossings(&actual, &expected);
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn parallel_refinements_preserve_exact_nodes_and_midpoint_termination() {
+        use std::sync::atomic::{AtomicUsize, Ordering};
+
+        let p = 128;
+        let lo = Float::with_val(p, 0);
+        let hi = Float::with_val(p, 1);
+        for workers in [1, 4] {
+            let pool = rayon::ThreadPoolBuilder::new()
+                .num_threads(workers)
+                .build()
+                .unwrap();
+            // Endpoints and neighboring exact nodes must each occur once;
+            // their neighboring intervals must not be refined again.
+            let exact_nodes = |t: &Float| {
+                let mut value = t.clone();
+                for root in [0.25, 0.5, 1.0] {
+                    let mut factor = t.clone();
+                    factor -= root;
+                    value *= factor;
+                }
+                value
+            };
+            let expected = sequential_crossings(exact_nodes, &lo, &hi, 4, 80);
+            let actual = pool.install(|| crossings(exact_nodes, &lo, &hi, 4, 80));
+            assert_same_crossings(&actual, &expected);
+            assert_eq!(actual.len(), 4);
+
+            let calls = AtomicUsize::new(0);
+            let midpoint = |t: &Float| {
+                calls.fetch_add(1, Ordering::Relaxed);
+                let mut value = t.clone();
+                value -= 0.5;
+                value
+            };
+            let actual = pool.install(|| crossings(midpoint, &lo, &hi, 1, 80));
+            assert_eq!(actual, vec![Float::with_val(p, 0.5)]);
+            assert_eq!(calls.load(Ordering::Relaxed), 3);
+        }
+    }
+
+    #[test]
+    fn parallel_refinements_preserve_rounded_grid_deduplication() {
+        // At this precision many distinct scan indices round to the same
+        // coordinate. Retain the old exact-equality deduplication behavior.
+        let p = 8;
+        let lo = Float::with_val(p, 1024);
+        let hi = Float::with_val(p, 1056);
+        let f = |_: &Float| Float::with_val(p, 0);
+        let expected = sequential_crossings(f, &lo, &hi, 64, 80);
+        assert!(expected.len() < 65);
+        for workers in [1, 4] {
+            let pool = rayon::ThreadPoolBuilder::new()
+                .num_threads(workers)
+                .build()
+                .unwrap();
+            let actual = pool.install(|| crossings(f, &lo, &hi, 64, 80));
+            assert_same_crossings(&actual, &expected);
+        }
+    }
+
     #[test]
     fn exact_scan_node_is_retained_once() {
         let roots = crossings(

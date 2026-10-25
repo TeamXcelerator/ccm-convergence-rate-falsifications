@@ -1,111 +1,132 @@
 {
-  "schema_version": 1,
-  "release": "v2.1",
-  "harness_version": "2.1.0",
-  "toolkit_version": "v0.15.0",
-  "toolkit_revision": "5d50b5b862b075a43e7c2c9ccedd29b568a32808",
-  "checked_at_utc": "2026-09-15T07:54:56.113673+00:00",
-  "scope": "Local software qualification; no full claim campaign or manuscript revalidation.",
-  "implementation_digest": "e0c11e2d05c701ab51d8de060ac88eadfbc8b2ef2a64ff0710c598395632bcf3",
-  "source_sha256_lf": {
-    "src/main.rs": "efe9eb409602933e6758b994d8db6dbe914c4a3a7744b30009c1b996406c60c4",
-    "src/journal.rs": "1dd79bf6c32c32dfed5c4c508eee1303360e5f05fd2900cd8400dc0387792ea2",
-    "src/source.rs": "ff6c34541160b7c4df1e537d5cb635a9e61f7513b25db976a862838765bfb388",
-    "src/experiments.rs": "b708d7a9e4a71aab41a36a6cd6def215f270adc92b6f2a5432de7e6663d0a41b",
-    "src/transforms.rs": "e6a45403c1f3831294d22b9a7fdc769d4164823dd5e38131b133857f2d314914",
-    "src/numerics.rs": "2dff1b562e3282c266240f7dcd3298a50a1dbadb31da28b5b506f43a709c18b2",
-    "Cargo.toml": "7105ac1a4ed35c8ea64a36a5d50d9cb3fd04f16ba3775c3b8b7c28b543a25628",
-    "Cargo.lock": "9073aa9d02651f752bc33de17ae9fa7187eea5e089433d30ab8a18162dfb638d",
-    "rust-toolchain.toml": "e33788b0b7fee22ee89c74de9a1b20b6ea12198fdcdf9be3306649c1182722c6",
-    "scripts/check_binary.py": "4c206273d85b5d1011adf95819026797f0c313f8f87f2dd1e1852317a12384ad",
-    "scripts/claim1a_lambda13_grid4001.sh": "ceacdb0c990b788392c5aabdeed31279145a59b436460405f5f00a37cd8e5f8c",
-    "scripts/claim1b_lambda100_grid4001.sh": "a984cbc7927e9111475ff9f529b3a2609cedaa5e214669b1147a0b9cc411dfaa",
-    "scripts/claim1c_lambda100_grid8001.sh": "03b5376397fac1ce46fc8855cac4efa2b695595fd67978b9ae2200ccf449a17c",
-    "scripts/claim1d_lambda1000_grid8001.sh": "bd6c839b8de5f0cb4adbf1a0174a77826ab23b1b4d1bd93c767f2fcaba0c780f",
-    "scripts/claim2_standard_ccm.sh": "84fe744a8e8f482f74d995fef70ab6451fbe06c6f144af69715e38370d6afa13",
-    "scripts/claim2a_kappa50.sh": "a1ae2d2ae50d4e6013a8f5f5b9638297542e44474f8b17bd70610867b1cfd2cb",
-    "scripts/claim2b_kappa100.sh": "d3a16e6734973a865d3a172cd7dd58e7ac71d2e70b6be5bec0baf06825b14d7d",
-    "scripts/claim2c_kappa150.sh": "a02826e1f051c26628606567f811b0b77e7088023183ea374cb2d18512e4a5a2",
-    "scripts/claim2d_kappa200.sh": "0749558f4566ef674ed1a85d3a3ab6e52eafe0709c9b7ace2183385b4bd1f373",
-    "scripts/claim2e_kappa300.sh": "450800112c4cdab4d47aebf0c591aae73967d8fc68ac7a4b6f8f79acf7488839",
-    "scripts/claim2f_kappa400.sh": "1af0f0d47c942085ff65ccccea81b52470cbe54970247c7cfce2dac6bdd4b6d2",
-    "scripts/claim2g_kappa500.sh": "15b85102a0b2b4ac1a6d96670ec578b54dfba00d2dcf7d56fcedd386ce33537d",
-    "scripts/claim3a_lambda13_weighted.sh": "71b042dc161f88f27d8ff8d4e8b5f967ffa57f25befe27a2419e27841854b0ea",
-    "scripts/claim3b_lambda100_naive.sh": "72cb2f15d1355b6a42cec073efccbb202729a1215f79443dce3692f07269fa26",
-    "scripts/claim_common.sh": "a6d56e0a1b39d8f669e20b6b9707f54d7621ad969542ef3a40fcfc9f2e4ec6a3",
-    "scripts/probe_indexed_c13.sh": "af223a64e1417992b41fccbf213837d67098ba7df4509c580213f767f2b75805",
-    "scripts/probe_mellin_c13_naive.sh": "54d65503640466bdcbc34afd8dca8dfc64fbf582835254b961e43229f049d904",
-    "scripts/summarize_runs.py": "2aba48ad56b31dc04fde45345d760ea78ffe0c3699d8fd705561821fe47ab9af",
-    "tests/integration.rs": "4135db064124f0e98df706d6feb58e06cb18ee32fa538abcd8615e5a1d03a2a5",
-    "tests/test_binary_contract.py": "53b1f93dca47effbda01279261851e10084e3b0b9511a436c72fab13f59aff01"
-  },
-  "checks": {
-    "windows_default_rust": {
-      "passed": 8,
-      "failed": 0,
-      "ignored": 0
-    },
-    "wsl_release_arb_rust": {
-      "passed": 17,
-      "failed": 0,
-      "ignored": 0
-    },
-    "python_executable_contract": {
-      "passed": 4,
-      "failed": 0
-    },
-    "strict_clippy_default_and_release_arb": "passed",
-    "rustfmt": "passed",
-    "shell_syntax": "passed",
-    "individual_launcher_help": {
-      "passed": 16,
-      "failed": 0
-    },
-    "existing_arb_executable_contract": "passed",
-    "local_markdown_links": {
-      "passed": 58,
-      "failed": 0
-    }
-  },
-  "environment": {
-    "native_rust": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
-    "wsl_rust": "rustc 1.98.1 (48a229cea 2026-09-01)",
-    "wsl_distribution": "Ubuntu-24.04"
-  },
-  "evidence_log_sha256": {
-    "arb-build.log": "0b5fe2277fd2b29cc111b76604c482f8ec516047dbc0954657203c5614f4e4db",
-    "arb-clippy.log": "128036034437632ef4fdd50eeffed7ea3dc851b777c90bcb35c4c944045e7dcc",
-    "arb-tests.log": "16ecb6d8507ae680d7d55f20e50b9b237821b965eb9c106491dd33a2f97fe411",
-    "binary-contract.log": "e8f266e1a30e37de574a88732c9258bc94642a75c500b94a5acd1faa800b16a6",
-    "format.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-    "native-clippy.log": "820d231f3f48ff90152f7aa1c4700934d56e1c7b35dac813e841bff3481fb3be",
-    "native-tests.log": "3c36ebe4430e44116e675a017d878b8a00bf233ceecc4f1bb9703e1c45a278ed",
-    "python-tests.log": "1bb402be01d362ab4a1c42f1f1984f893e835f795347d7eac5a3233956117b0e",
-    "rustc-wsl.log": "2073de5abf149185c2f4d7473dc833bc921b99135560d24ae7b2293f33a9c376",
-    "script-help.log": "ad98e021d61d06dc475be392044dbc755ba29926f8c6267559eefb89ecc81b86"
-  },
-  "publication_transport_amendment": {
-    "toolkit_revision": "f903712ac87be591478a98eff50a6caff9a9bb16",
-    "scope": "Exact dependency pin, lockfile, embedded revision and current documentation updated. Full harness test and strict Clippy tiers repeated; four Python contract tests, binary source contract, formatting and shell syntax passed. Numerical claim scripts and manuscript are unchanged.",
-    "log_sha256": {
-      "ccm-publication-paper-native.log": "90067b3f723e6dd81122d8bf0a910ce613268e9aeadf0349a81cc62e7c56a1b9",
-      "ccm-publication-paper-hp.log": "6546d562341cc767d0accb4a043b332957eba898fc13ec603a172858ec13f838",
-      "ccm-publication-paper-native-clippy.log": "52d6e008a3c54dc0968cfc8571c747a857506ea622f597451683d0e64f122234",
-      "ccm-publication-paper-hp-clippy.log": "6075db225021a9f019ed9b9a895107c9177eb7e3548d4f8623369e29be7b6e4a",
-      "ccm-publication-paper-build.log": "1ff8bbcb4151dc887e69b78a29bc241d5062cba4757aa5f4639926ae712a8181"
-    },
-    "claim_rerun": false
-  },
-  "publication_recovery_amendment": {
-    "toolkit_revision": "5d50b5b862b075a43e7c2c9ccedd29b568a32808",
-    "scope": "Dependency and operational documentation update only; both complete harness suites, strict Clippy tiers, four Python tests, executable source contract, formatting and shell syntax passed. Manuscript and numerical claim scripts unchanged.",
-    "log_sha256": {
-      "recovery-native.log": "53b68bc89a0646dcf7c64235dc2c0865ade0c390a11d54cab199e97734fc7f04",
-      "recovery-hp.log": "1c57142aa943affd74ff3a6948b35d77528984eae5c142e73c20ab6b5eff6921",
-      "recovery-native-clippy.log": "40ae9a96530fb6b71864d1c971fc4584059ce689022bc062395d089db886c5f6",
-      "recovery-hp-clippy.log": "bde7f1770bf98878b5982c95cba3105186d8202659c69f5ef3d3fc37060dd470",
-      "recovery-python.log": "435ca37ad503f990746f35940a4e460bc14e326e18d3804477a8663e36d9410f"
-    },
-    "claim_rerun": false
-  }
+    "schema_version":  1,
+    "release":  "v2.1 retest candidate",
+    "harness_version":  "2.1.0",
+    "toolkit_version":  "v0.17.0",
+    "toolkit_revision":  "ea546f0d9fa134275c15d47fc461012c4f21dbc6",
+    "checked_at_utc":  "2026-10-25T14:45:09.6393253Z",
+    "scope":  "Bounded local debug-profile software qualification and small C13/N24 integration, not a full claim campaign, CUDA benchmark, or manuscript revalidation.",
+    "implementation_digest":  "48e304e8148c5f8df21788ed5812b78af8278c4e50772f51e75cb1f507a9e645",
+    "source_sha256_lf":  {
+                             "Cargo.lock":  "59390dcda91073c68ca2d0c77087f9a11b2bb86bd8fe74813649e050cc214cf3",
+                             "Cargo.toml":  "3c07eceaf110d3135aafb4443dfc45916fce552c5eabee9934734474c17d1e3e",
+                             "rust-toolchain.toml":  "e33788b0b7fee22ee89c74de9a1b20b6ea12198fdcdf9be3306649c1182722c6",
+                             "scripts/check_binary.py":  "07a3300d446539c90881c6525b5cfddfe28445cff0ad358588c8c381856a75b9",
+                             "scripts/claim_common.sh":  "6b63abfa53d23402a3b35414e00ba4a8fa8b7c5933e5c4f006f633f7573679e7",
+                             "scripts/claim1a_lambda13_grid4001.sh":  "ceacdb0c990b788392c5aabdeed31279145a59b436460405f5f00a37cd8e5f8c",
+                             "scripts/claim1b_lambda100_grid4001.sh":  "a984cbc7927e9111475ff9f529b3a2609cedaa5e214669b1147a0b9cc411dfaa",
+                             "scripts/claim1c_lambda100_grid8001.sh":  "03b5376397fac1ce46fc8855cac4efa2b695595fd67978b9ae2200ccf449a17c",
+                             "scripts/claim1d_lambda1000_grid8001.sh":  "bd6c839b8de5f0cb4adbf1a0174a77826ab23b1b4d1bd93c767f2fcaba0c780f",
+                             "scripts/claim2_standard_ccm.sh":  "84fe744a8e8f482f74d995fef70ab6451fbe06c6f144af69715e38370d6afa13",
+                             "scripts/claim2a_kappa50.sh":  "a1ae2d2ae50d4e6013a8f5f5b9638297542e44474f8b17bd70610867b1cfd2cb",
+                             "scripts/claim2b_kappa100.sh":  "d3a16e6734973a865d3a172cd7dd58e7ac71d2e70b6be5bec0baf06825b14d7d",
+                             "scripts/claim2c_kappa150.sh":  "a02826e1f051c26628606567f811b0b77e7088023183ea374cb2d18512e4a5a2",
+                             "scripts/claim2d_kappa200.sh":  "0749558f4566ef674ed1a85d3a3ab6e52eafe0709c9b7ace2183385b4bd1f373",
+                             "scripts/claim2e_kappa300.sh":  "450800112c4cdab4d47aebf0c591aae73967d8fc68ac7a4b6f8f79acf7488839",
+                             "scripts/claim2f_kappa400.sh":  "1af0f0d47c942085ff65ccccea81b52470cbe54970247c7cfce2dac6bdd4b6d2",
+                             "scripts/claim2g_kappa500.sh":  "15b85102a0b2b4ac1a6d96670ec578b54dfba00d2dcf7d56fcedd386ce33537d",
+                             "scripts/claim3a_lambda13_weighted.sh":  "71b042dc161f88f27d8ff8d4e8b5f967ffa57f25befe27a2419e27841854b0ea",
+                             "scripts/claim3b_lambda100_naive.sh":  "72cb2f15d1355b6a42cec073efccbb202729a1215f79443dce3692f07269fa26",
+                             "scripts/probe_indexed_c13.sh":  "af223a64e1417992b41fccbf213837d67098ba7df4509c580213f767f2b75805",
+                             "scripts/probe_mellin_c13_naive.sh":  "54d65503640466bdcbc34afd8dca8dfc64fbf582835254b961e43229f049d904",
+                             "scripts/README.md":  "1665d45bc921acc03d1b5075943d66f2ccfeff18858a33a6d0dfed5b9c458e9a",
+                             "scripts/summarize_runs.py":  "2aba48ad56b31dc04fde45345d760ea78ffe0c3699d8fd705561821fe47ab9af",
+                             "src/experiments.rs":  "553d60635dce6140303a3993890ef53c910f9aa71b81d2966b76f682af3b0d92",
+                             "src/journal.rs":  "794473ee905ee8f85f33f060a8fcef6f5bfbd3700888d8849af157c05ae6ebac",
+                             "src/main.rs":  "bf2e62557de97a303799e4f1eb1e508e18ea62f53e9d4594a484e5a994c347d2",
+                             "src/numerics.rs":  "2dff1b562e3282c266240f7dcd3298a50a1dbadb31da28b5b506f43a709c18b2",
+                             "src/preparation.rs":  "8cb3b82e571b5ae4b5c1aded890948fcfece2a9594088ad23faee3c71485405e",
+                             "src/source.rs":  "7046037187360f6630a7d065c5e84220387b9dca32eb565559545afc65a6212b",
+                             "src/transforms.rs":  "5ed51f8c588961f1af47f8d070a42ee06655841e374a71293949add2bd6a97e5",
+                             "tests/integration.rs":  "de9fcfbc532a18afa198129e96d7e99a102bf299b0819c3715126fa2e7be60d3",
+                             "tests/test_binary_contract.py":  "53b1f93dca47effbda01279261851e10084e3b0b9511a436c72fab13f59aff01"
+                         },
+    "checks":  {
+                   "wsl_default_rust":  {
+                                            "passed":  9,
+                                            "failed":  0
+                                        },
+                   "wsl_arb_rust":  {
+                                        "passed":  23,
+                                        "failed":  0
+                                    },
+                   "python_executable_contract":  {
+                                                      "passed":  4,
+                                                      "failed":  0
+                                                  },
+                   "strict_clippy_default_and_arb":  "passed",
+                   "rustfmt":  "passed",
+                   "shell_syntax":  "passed",
+                   "real_binary_admissions":  {
+                                                  "computed":  false,
+                                                  "passed":  16
+                                              },
+                   "publication_routing":  "individual claim entry points verified with a noncomputing stub; only 1a selects both; no remote mutations",
+                   "cold_warm_probe":  "C13 N24 HP60 grid101; measurement values identical cold/warm and against the previous implementation",
+                   "ultra_probe":  "C13 N24 HP60 grid101, 2 sector eigenpairs, reduced distance grid/profile: actual private preparation and all 50 requested acquisitions completed; no remote publication"
+               },
+    "environment":  {
+                        "workers":  4,
+                        "response_backend":  "cpu",
+                        "distribution":  "Ubuntu 24.04 WSL",
+                        "rust":  "1.98.1",
+                        "dense_backend":  "cpu",
+                        "maximum_address_space_gib":  16
+                    },
+    "evidence_log_sha256":  {
+                                "baseline-comparison.log":  "eca1a9eff5b1339d18532795f312b93aec8eb1009878f19931d068061f5f3d7c",
+                                "build.log":  "1094a36867300c1838cdc4ee40efe961d83bac574665f8ee57a40d5b1e88698c",
+                                "clippy-arb.log":  "9cd4053badcf50aebf175ec0570565333294aa13565d3c5e35ec89694abdcbd0",
+                                "clippy-default.log":  "f2697ac67043e16f687661001bd9b03403c963a849629b08ae35fda54a4041a6",
+                                "large-cutoff-cache-working-regression.log":  "9c74224aa28168043df8e8d16f6848c54c5c5182336d11b9b9fe4a9a5e1bc219",
+                                "large-cutoff-cache-working-regression-v2.log":  "15c29bb84aea860b5f35b8349db6f3db5253ab3d6d8c2f3c2b482393e7826e11",
+                                "large-cutoff-final-focused-tests.log":  "fac1ec11c1ce2345e0495209bc5d067e6c6daab24b96cfd93e822893322dba5b",
+                                "large-cutoff-focused-tests.log":  "9bf7e35d5192b3f89e090b1df4766ff2c68831bf896825bc89b245c84e93e875",
+                                "large-cutoff-focused-tests-v2.log":  "f487f9c9be6f8939e657903e23d711bf6684a91a9c5170f7fead5e4a40c1741d",
+                                "large-cutoff-probes.log":  "eb59178008b88577a38d9da4c9cf920e30b4bfeaac8b85ba43797846f7ad1121",
+                                "large-cutoff-python-tests.log":  "e5133f20dff791c8e7a87e6f52246dbadb452a48ff7f00bddff0d84f38efcb18",
+                                "large-cutoff-qualification-c2500.log":  "cda2c35a97c21d2b0cb60e21e3795358961e4cd9f2e14cda7122c8b51fc12660",
+                                "large-cutoff-qualification-c250000.log":  "7cdbc3290b9251baaad5bb94abdd7399e76b88eb22f8613609c3bc62e4010fc7",
+                                "large-cutoff-qualification-c250000-final.log":  "c57669d23ad67247f9339c9b0dd0663067bb8e1eb543fcdef45ec34a6e223173",
+                                "large-cutoff-qualification-c250000-partial-v2.log":  "1f669d8793321bd3c446ca4ee352bd163e8f15a7376c11d366cc13d342dadbad",
+                                "large-cutoff-qualification-c2500-final.log":  "8784b82fa9f8e94a96113b4bfddcdea34587903de959e95e3d036e42ab2637ca",
+                                "large-cutoff-qualification-c2500-partial-v2.log":  "ea8698b96d38c1f7ca5c5c495916984b7a3394ce9cb8191be69983da89dd022c",
+                                "large-cutoff-toolkit-admission.log":  "952322659c836a6d4a78878108f20871c3e4559afca9c3325d964cfcdfff855f",
+                                "launcher-plans.log":  "672a20792802059965bd66e74d9b8088406b1e8b88034ef1768e223d14dbf4b5",
+                                "mellin-tests.log":  "3a7ca59f8556a47e0511fb8a986282b4998f82a36c2fa62f26404016ab6eae97",
+                                "paper-smoke-summary.log":  "a503491759bea75bef4058e3e2874273e5fa5e573e891609d8d4c3c763419655",
+                                "prolate-cache-final-tests.log":  "6ae8e6ea7a2b699e55725b52bc3e6580582960c724a89a576941d105675761d1",
+                                "prolate-cache-tests.log":  "7b5caa75d81f98347bb5fe35344a4bec14547352a7dbcffe816fa0ffc789fbe5",
+                                "provider-build.log":  "b58d52b024903fbc77bcf04d56de589208f5bd1c288ef2c937b395a4f287395b",
+                                "provider-clippy.log":  "adcf199b1ee3f9e06799146a3f0b826eeb2762b4447360d07f7ecf252b37ff0f",
+                                "provider-tests.log":  "b20f820b47c6aaffef5b5827580b9796c90082d98825e8194d27c05dea263280",
+                                "public-routing.log":  "7e089d198b5efa93e467f15ebf7eb46e9ab98e431dbff54853accbe362f1d34d",
+                                "python-wsl-tests.log":  "179b3c6f7b34fefa81d78ab303073e968a81a71f23423dcd0f447acfddc3d366",
+                                "r1-build.log":  "dda7980e8da1041233b9bd7cd86f479320cbe44ef953019bb06c5f1c023ea622",
+                                "r1-clippy-arb.log":  "5ad663d87d9e86678ea50d6742cddd3ae127dd563b567029267bf5f5bda2fce2",
+                                "r1-clippy-default.log":  "de08cd36c86b0f8013e71ae67481fdadc7a8679a6c9ea2dceaf3a51f882e3de3",
+                                "r1-python-wsl-tests.log":  "ddc26bf864432eb5742081c46ef091c81b30f328aed3d1e48700f2a0c5e3fe54",
+                                "r1-script-tests.log":  "a5a1a2b599757bd22bd60618443e4a9abe314e32c6cd27f8eac4282fe0c7b29d",
+                                "r1-tests-arb.log":  "06c9977e940901ae6e70f713d381365f7190157e4b62847371d22198d0bb0003",
+                                "r1-tests-default.log":  "2318fce400c90accb8a6aa7ad0a6f1bfc98ea5e9fcbfc08039e14dfa5d2a2ced",
+                                "r2-python-wsl-tests.log":  "70077ea71182c18ec7963f06e956a7f5385e884c26848bd1f973474edc1b702a",
+                                "script-tests.log":  "a95a4e24f3872b97573d9f32b41fc9c028361ae48d40ebffac91d2ff3d74a652",
+                                "smoke-cold.log":  "22393bddc6321e4655f3d6b9a7c2e4d3f5e19252bc73adc45d443eae00c7c8f0",
+                                "smoke-warm.log":  "8a21cb03450ceaafcb6d0668a2531e16386ceb8f7c7f26ac901bc292968a88da",
+                                "tests-arb.log":  "87da8eb0100405bdf047b5aab974925f0ea123ccf599b56e13fcc0e89234db8e",
+                                "tests-default.log":  "c75f0c73208408c2e5b0616ed6d638fae914d5034bbeb5abb62b0f2aa188c295",
+                                "toolkit-check.log":  "00fdce47e0c408578b2e1995bcac60aa74aa3e3392bf96e0cafbf4a6e9da4ef6",
+                                "toolkit-clippy.log":  "9a5de4fa0e662f938367479e84c2779a49eb6b38468fe9e5c27f2aae0653ee77",
+                                "toolkit-final-clippy.log":  "423858a9fe7f34da103eb64e23f148dee0b36b29475bfea95b09a44fb56320fc",
+                                "toolkit-prolate.log":  "0183af088c56c00d19191c9500ea5e9f095f345c9b33703731eb3d2b3ee3cb90",
+                                "toolkit-target.log":  "6f092b108600034a169bbd433ea6d54595d79a14e11fa3957c31031c27cbbc3d",
+                                "ultra-smoke.log":  "8e269f4f4926dde502aac51c56dbe2698639c23b1dadeb94bbc6c8cc5c0b8221",
+                                "ultra-smoke-summary.log":  "2925406904989fb23f6db29b69bbd9ac25585f5a20e97b85c420341034a1c21a",
+                                "vector-admission-tests.log":  "9e9d13fc5bd36973d3d2da29337bc606ba3f6e4f6afb5689614d981cf9b9c7ee"
+                            },
+    "remaining":  [
+                      "Full claim-scale timing and CUDA throughput on intended hardware",
+                      "Full default-precision large-cutoff target throughput",
+                      "Live public/private publication from this candidate"
+                  ]
 }

@@ -98,7 +98,10 @@ pub fn prolate(
         certification_failure_policy: cache.certification_failure_policy,
         production_sink: Some(&observer),
     };
-    let result = xc_spectral::prolate::hp::compute_k_lambda_via_cache(
+    // This experiment specifies a finite-difference grid. The Toolkit's ordinary
+    // prolate API now selects a bounded Legendre model; do not change models
+    // silently when upgrading the dependency.
+    let result = xc_spectral::prolate::hp::compute_k_lambda_finite_dirichlet_via_cache(
         &lambda, *n_grid, *n_sample, p, &observed,
     )?;
     let values = result

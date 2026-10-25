@@ -4,7 +4,11 @@ CLAIM_REPO_ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 cd "$CLAIM_REPO_ROOT"
 
 claim_init() {
-  CLAIM_ARGS=("$@")
+  CLAIM_ARGS=()
+  local publish=false arg
+  for arg in "$@"; do
+    if [[ $arg == --publish ]]; then publish=true; else CLAIM_ARGS+=("$arg"); fi
+  done
   if [[ ${1:-} == --help || ${1:-} == -h ]]; then
     echo "Usage: bash ${BASH_SOURCE[1]} [binary options for this experiment]"
     echo 'Defaults: current numerical profile, independent roots, Ultra capture.'
@@ -12,6 +16,20 @@ claim_init() {
     echo 'CLAIM_RUN_ROOT selects the journal parent. Existing runs are preserved.'
     return 0
   fi
+  local memory=${XC_CLAIM_MEMORY_GIB:-32}
+  [[ $memory =~ ^[1-9][0-9]{0,9}$ ]] && ((memory <= 8589934591)) || {
+    echo 'XC_CLAIM_MEMORY_GIB must be an integer in 1..8589934591' >&2; exit 2;
+  }
+  export XC_RESEARCH_WORKING_BYTES=$((memory << 30))
+  export XC_PUBLISH_TARGET=none XC_PUBLISH_EXECUTE=false
+  if [[ $publish == true ]]; then
+    export XC_RUN_PROFILE=author XC_PUBLISH_EXECUTE=true XC_PUBLISH_REPLACE=false
+    case "${BASH_SOURCE[1]##*/}" in
+      claim1a_lambda13_grid4001.sh) export XC_PUBLISH_TARGET=both ;;
+      *) export XC_PUBLISH_TARGET=private ;;
+    esac
+  fi
+  echo "Claim working budget: $memory GiB; publication: $XC_PUBLISH_TARGET"
   if [[ -z ${BIN+x} ]]; then
     if ! command -v pkg-config >/dev/null || ! pkg-config --atleast-version=3 flint; then
       echo '[INCOMPLETE] Complete root discovery requires FLINT 3 or newer.' >&2
@@ -45,6 +63,7 @@ claim_run() {
   set +e
   "$BIN" --numerical-profile "${NUMERICAL_PROFILE:-current}" \
     --root-acquisition "${ROOT_ACQUISITION:-independent}" \
+    --capture-maximum-stream-scalar-bytes "${XC_CLAIM_STREAM_SCALAR_BYTES:-274877906944}" \
     --research-capture "${RESEARCH_CAPTURE:-ultra}" "$@" "${CLAIM_ARGS[@]}" \
     --capture-output "$output" 2>&1 | tee "$output/invocation.log"
   statuses=("${PIPESTATUS[@]}")

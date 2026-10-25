@@ -1,5 +1,5 @@
 //! Source-bound finite CCM experiments; historical manuscript conclusions are reviewed separately.
-use anyhow::{ensure, Result};
+use anyhow::{ensure, Context, Result};
 use clap::{Parser, Subcommand, ValueEnum};
 use serde::Serialize;
 use std::path::PathBuf;
@@ -10,10 +10,12 @@ mod journal;
 #[cfg(feature = "hp")]
 mod numerics;
 #[cfg(feature = "hp")]
+mod preparation;
+#[cfg(feature = "hp")]
 mod source;
 #[cfg(feature = "hp")]
 mod transforms;
-const TOOLKIT_REVISION: &str = "5d50b5b862b075a43e7c2c9ccedd29b568a32808";
+const TOOLKIT_REVISION: &str = "ea546f0d9fa134275c15d47fc461012c4f21dbc6";
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq, ValueEnum, Serialize)]
 #[serde(rename_all = "kebab-case")]
@@ -45,6 +47,18 @@ enum MellinMode {
 
 #[derive(Clone, Debug, clap::Args, Serialize)]
 struct Common {
+    /// Experimental native-Linux Gauss-Legendre root scheduling; unsupported on WSL.
+    #[arg(long, global = true)]
+    parallel_gl_roots: bool,
+    /// Check argument and capture policies without computing or opening caches.
+    #[arg(long, global = true)]
+    validate_only: bool,
+    /// Explicitly acquire the large sector-gap certificate. Off by default.
+    #[arg(long, global = true)]
+    capture_sector_gap_certificate: bool,
+    /// Cumulative streamed scalar text, separate from live working memory.
+    #[arg(long, global = true, default_value_t = 274877906944_u64)]
+    capture_maximum_stream_scalar_bytes: u64,
     /// Optimized even-sector/Auto policy, or historical adaptive-even/legacy solver.
     #[arg(long, global = true, value_enum, default_value = "current")]
     numerical_profile: NumericalProfile,
@@ -77,6 +91,11 @@ struct Common {
 #[derive(Clone, Debug, Subcommand, Serialize)]
 #[serde(tag = "experiment", rename_all = "kebab-case")]
 enum Command {
+    /// Retry retained staged publication without any numerical acquisition.
+    PublishStaged {
+        #[arg(long)]
+        staging_root: PathBuf,
+    },
     /// Finite Weil/prolate approximation. This does not test CCM Lemma 7.2.
     ProlateCompare {
         #[arg(long, default_value_t = 13)]
@@ -219,7 +238,47 @@ fn main() -> Result<()> {
         return Ok(());
     }
     let cli = Cli::parse();
+    if let Command::PublishStaged { staging_root } = &cli.command {
+        let config = xc_cache::ManagedArtifactCacheConfig::from_environment()?
+            .context("managed cache required for publication")?;
+        ensure!(
+            config.profile == xc_cache::ManagedRunProfile::Author
+                && config.execute_remote_mutations
+                && config.publication_target != xc_core::PublicationTarget::None
+                && config.output_validation.is_none(),
+            "publication requires explicit author execution and destination"
+        );
+        ensure!(
+            std::fs::symlink_metadata(staging_root)?
+                .file_type()
+                .is_dir()
+                && config
+                    .staging_root
+                    .as_ref()
+                    .context("staging root required")?
+                    .canonicalize()?
+                    == staging_root.canonicalize()?,
+            "staging root differs from configured publication directory"
+        );
+        let managed = xc_cache::ManagedArtifactCacheSession::new_with_resources(
+            config,
+            xc_cache::managed_resource_policy_from_environment()?,
+        )?;
+        let inventory = managed
+            .retry_retained_publication()?
+            .context("no retained publication inventory")?;
+        println!("Publication finalized: {}", inventory.display());
+        return Ok(());
+    }
     validate(&cli)?;
+    if cli.common.validate_only {
+        println!(
+            "{}",
+            serde_json::json!({"admitted":true,"toolkit_revision":TOOLKIT_REVISION,
+            "options":cli.common,"command":cli.command,"cohort_analysis":"deferred"})
+        );
+        return Ok(());
+    }
     #[cfg(not(feature = "hp"))]
     {
         let _ = cli;
@@ -236,6 +295,7 @@ fn main() -> Result<()> {
         );
         let mut successful = true;
         match &cli.command {
+            Command::PublishStaged { .. } => unreachable!("handled before numerical dispatch"),
             Command::SliwinskiCheck {
                 lambda_squares,
                 lambdas,
@@ -312,12 +372,17 @@ fn main() -> Result<()> {
 }
 fn validate(cli: &Cli) -> Result<()> {
     ensure!(
+        (1..=1099511627776).contains(&cli.common.capture_maximum_stream_scalar_bytes),
+        "stream scalar limit must be in 1..1099511627776 bytes"
+    );
+    ensure!(
         cli.common.research_sector_eigenpairs >= 2
             && cli.common.capture_grid_resolution >= 8
             && cli.common.capture_profile_steps >= 2,
         "invalid capture dimensions"
     );
     match &cli.command {
+        Command::PublishStaged { .. } => (),
         Command::ProlateCompare {
             lambda_sq,
             n_modes,
@@ -381,6 +446,7 @@ fn validate(cli: &Cli) -> Result<()> {
     }
     #[cfg(feature = "hp")]
     match &cli.command {
+        Command::PublishStaged { .. } => (),
         Command::ProlateCompare {
             n_modes,
             precision_digits,
@@ -450,6 +516,30 @@ mod tests {
         let cli = Cli::try_parse_from(["ccm-falsifications", "prolate-compare"]).unwrap();
         assert_eq!(cli.common.numerical_profile, NumericalProfile::Current);
         assert_eq!(cli.common.root_acquisition, RootAcquisition::Independent);
+        assert!(!cli.common.capture_sector_gap_certificate);
+        assert_eq!(cli.common.capture_maximum_stream_scalar_bytes, 274877906944);
+    }
+    #[test]
+    fn operational_overrides_are_explicit_and_bounded() {
+        for limit in ["0", "1099511627777"] {
+            let cli = Cli::try_parse_from([
+                "ccm-falsifications",
+                "prolate-compare",
+                "--capture-maximum-stream-scalar-bytes",
+                limit,
+            ])
+            .unwrap();
+            assert!(validate(&cli).is_err());
+        }
+        let cli = Cli::try_parse_from([
+            "ccm-falsifications",
+            "prolate-compare",
+            "--capture-sector-gap-certificate",
+            "--validate-only",
+        ])
+        .unwrap();
+        assert!(cli.common.capture_sector_gap_certificate && cli.common.validate_only);
+        assert!(validate(&cli).is_ok());
     }
     #[test]
     fn capture_and_historical_route_are_selectable() {

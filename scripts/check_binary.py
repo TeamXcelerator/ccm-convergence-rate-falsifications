@@ -8,7 +8,7 @@ import subprocess
 import sys
 
 SOURCES = ("src/main.rs", "src/journal.rs", "src/source.rs", "src/experiments.rs",
-           "src/transforms.rs", "src/numerics.rs", "Cargo.toml", "Cargo.lock")
+           "src/transforms.rs", "src/numerics.rs", "src/preparation.rs", "Cargo.toml", "Cargo.lock")
 
 def expected_digest(repo):
     texts = [(repo / name).read_text(encoding="utf-8").replace("\r\n", "\n") for name in SOURCES]
