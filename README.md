@@ -1,142 +1,180 @@
-# Empirical Falsification of Convergence Rate Predictions for the CCM Zeta Spectral Triple
+# Empirical Falsification of Convergence Rate Predictions for the Connes–Consani–Moscovici Zeta Spectral Triple
 
-> Two quantitative predictions about how the Connes–Consani–Moscovici
-> zeta spectral triple converges to Riemann zeros are tested at high
-> precision (primarily 1000 digits, MPFR/GMP). CCM Lemma 7.2 is
-> falsified outright; Śliwiński's Conjecture 4.1 is empirically
-> unsupported at HP-1000. The CCM construction is 10⁵⁵ more accurate
-> than naive Mellin truncation, confirming its power is algebraic
-> rather than analytic.
+Reproducible finite tests of Weil/prolate approximation, indexed root errors,
+and complex Mellin-transform residuals for the Connes–Consani–Moscovici (CCM)
+construction. The accompanying software provides independently runnable
+experiments and records their numerical evidence.
 
-**Author:** Ronnie Andrews, Jr.  
-**ORCID:** [0009-0003-9724-3104](https://orcid.org/0009-0003-9724-3104)  
-**Contact:** randrewsmath@gmail.com  
-**Date:** June 2026
+**Author:** Ronnie Andrews, Jr.<br>
+**ORCID:** [0009-0003-9724-3104](https://orcid.org/0009-0003-9724-3104)<br>
+**Contact:** [randrewsmath@gmail.com](mailto:randrewsmath@gmail.com)<br>
+**Software release:** v2.1 (Xcelerator Toolkit v0.17.0)<br>
+**Manuscript:** v2.0
 
-## Headline Results
+The software release provides individual experiment scripts, Ultra research
+capture and explicit result summaries. [Cargo.toml](Cargo.toml) and
+[Cargo.lock](Cargo.lock) pin Toolkit revision
+`382d1c1c341ef39368f112b1875df882b0ce808a`. The manuscript and software have
+separate version histories; software qualification is not a completed rerun
+or a revision of the manuscript's conclusions.
 
-| Test | Predicted rate | HP measurement | Verdict |
-|---|---|---|---|
-| CCM Lemma 7.2 (prolate-wave approx) | rel error × λ² ≈ const | grows by ~1,116,000× from λ²=13 to λ²=1000 | **falsified** |
-| Śliwiński Conjecture 4.1 | ε(κ)·ln(κ) → const | oscillates 2.316–3.704 (full) and 1.041–1.853 (trim-20%) over κ=50–500; no convergence to constant | **unsupported at HP-1000** |
-| CCM vs naive Mellin truncation | (qualitative) | CCM is 10⁵⁵ more accurate (verified at HP-1000) | **algebraic, not analytic** |
+Finite-Dirichlet comparisons reuse recovered prolate modes and sampled profiles
+as well as the complete spectrum. Exact-root construction uses an integer
+product tree, and certified contours reuse immutable transform preparation
+with unchanged mathematical artifact identities. Independent Mellin crossing refinements run
+in parallel with the same per-bracket arithmetic and ordered results. These
+changes preserve the experiment's finite model and numerical output.
 
-## Key Findings
+## Read the paper and evidence
 
-### Claim 1: CCM Lemma 7.2 is empirically falsified
+| I want to... | Open |
+|---|---|
+| Read the manuscript | [PDF](paper.pdf) · [LaTeX source](paper.tex) |
+| Choose one experiment | [Individual script catalog](scripts/README.md) |
+| Set up and run a reproduction | [Reproduction guide](docs/RETESTING.md) |
+| Interpret results and retained artifacts | [Research evidence guide](docs/RESEARCH_EVIDENCE.md) |
+| Check software validation | [Validation report](docs/VALIDATION.md) · [Machine-readable record](docs/validation/v2.1.json) |
 
-At HP-1000, the quantity `rel × λ²` (which Lemma 7.2 predicts is bounded
-by a constant) grows by ~1,116,000× across λ²∈{13, 100, 1000}. At
-λ²=1000 the prolate-wave residual is 99.9% of ξ_λ — the guess has
-essentially no correlation with the actual eigenvector.
+## Run one experiment
 
-### Claim 2: Śliwiński Conjecture 4.1 is empirically unsupported
-
-In the κ=N=λ regime at HP-1000 across κ∈{50–500}, ε(κ)·lnκ ranges
-from 2.316 to 3.704 (full-spectrum) and 1.041 to 1.853 (trim-20%),
-with no convergence to a constant — values oscillate without settling,
-and the trimmed metric grows 1.6× from κ=50 to κ=500. Theorem 3.1
-(Śliwiński's lower bound) holds at every configuration with margin
-4.2× to 14.8×. The aggregate metrics are dominated by high-index
-eigenvalues at the matrix's truncation boundary, which contribute O(1)
-error regardless of κ; the first eigenvalues converge super-exponentially
-(160 digits at κ=50, 608 digits at κ=200, saturating HP-1000 at κ=400).
-
-### Claim 3: CCM is 10⁵⁵ more accurate than naive Mellin truncation
-
-Integral transforms of ξ_λ (naive Mellin and ξ-weighted variants) fall
-short of CCM's algebraic accuracy by orders of magnitude. The
-construction's power is in the eigenvalue problem + rational-function
-zeros, not in any integral transform.
-
-## Reproduction
-
-### Requirements
-
-- Rust toolchain (stable)
-- Linux/WSL/macOS
-- System libraries: `sudo apt install build-essential m4 libgmp-dev libmpfr-dev libmpc-dev`
-
-### Build
+Use Rust 1.98 or later, Python 3, Git and Bash. The high-precision numerical
+experiments run on Linux or WSL. Ubuntu 24.04 supplies the required FLINT 3
+package:
 
 ```bash
-cargo build --release --features hp
+sudo apt-get update
+sudo apt-get install -y build-essential m4 libgmp-dev libmpfr-dev libmpc-dev libflint-dev pkg-config
 ```
 
-### Reproduce all claims
+From a checkout of this repository, build the locked high-precision executable
+and start with the small transform control:
 
 ```bash
-bash scripts/retest_all_claims.sh
+cargo build --release --features arb --locked
+bash scripts/probe_mellin_c13_naive.sh
 ```
 
-Or run individual claims:
+Before a CCM run with target-dependent diagnostics, select the target
+specification **file on disk**:
 
 ```bash
-bash scripts/claim1_lemma72_falsification.sh     # Lemma 7.2 (~1 hr)
-bash scripts/claim2_sliwinski_conjecture.sh      # Conjecture 4.1 (~1 day)
-bash scripts/claim3_mellin_vs_ccm.sh             # Mellin comparison (~1 hr)
+export XC_TARGET_SPEC_FILE=/absolute/path/to/runtime-target.json
+test -r "$XC_TARGET_SPEC_FILE"
 ```
 
-Claim 2 is split into 7 per-κ sub-scripts for parallel reproduction:
+Then run the bounded indexed-root control separately:
 
 ```bash
-bash scripts/claim2a_kappa50.sh      # κ=50  (minutes)
-bash scripts/claim2b_kappa100.sh     # κ=100 (minutes)
-bash scripts/claim2c_kappa150.sh     # κ=150 (~30 min)
-bash scripts/claim2d_kappa200.sh     # κ=200 (~1 hr)
-bash scripts/claim2e_kappa300.sh     # κ=300 (~2 hr)
-bash scripts/claim2f_kappa400.sh     # κ=400 (~4 hr)
-bash scripts/claim2g_kappa500.sh     # κ=500 (many hours)
+bash scripts/probe_indexed_c13.sh
 ```
 
-## Cache Infrastructure
+The first control requires no CCM matrix or target. The second requests 20
+independently discovered movable roots at C=13, N=120, P=1000. All individual
+scripts default to the current even-sector solver, independent root discovery
+and Ultra capture. The [setup and override instructions](docs/RETESTING.md)
+explain directories, the target file, precision, and selecting a larger claim.
 
-Caches (GL nodes, τ-matrices, Weil eigenvectors, prolate eigenvalues)
-are hosted in dedicated public repositories and fetched automatically
-on demand via DynamicFetch — no manual download required:
+Every invocation writes a fresh directory and prints its location. Scripts
+build automatically unless `BIN` selects an existing executable; the launcher
+checks that executable against the exact source, lockfile, Toolkit pin and
+complete-root capability before computation.
 
-- [xcelerator-gl-cache](https://github.com/TeamXcelerator/xcelerator-gl-cache)
-- [xcelerator-tau-cache](https://github.com/TeamXcelerator/xcelerator-tau-cache)
-- [xcelerator-weil-eigvec-cache](https://github.com/TeamXcelerator/xcelerator-weil-eigvec-cache)
-- [xcelerator-prolate-eigvals-cache](https://github.com/TeamXcelerator/xcelerator-prolate-eigvals-cache)
+## Read the summary
 
-All configurations reported in the paper have their cache fixtures in
-these repositories. No configuration requires fresh cold compute to
-reproduce — the dominant cost on a fresh clone is LU factorization and
-Newton refinement on the cached matrices.
+The terminal distinguishes **run integrity**, **finite hypothesis outcomes**
+and **capture completeness**. This illustrative excerpt shows how a negative
+finite hypothesis can still be a valid completed experiment:
 
-## Architecture
-
-This repository contains the paper-specific CLI harness and
-reproduction scripts. The core mathematical library is the
-[Xcelerator Toolkit](https://github.com/TeamXcelerator/xcelerator-toolkit)
-(pinned to a tagged release), pulled automatically by Cargo during
-build. No manual cloning of the toolkit is required.
-
-## References
-
-1. Connes, A., Consani, C., Moscovici, H. (2025). *Zeta Spectral
-   Triples*. arXiv:2511.22755.
-2. Śliwiński, D. (2026). *Spectral Analysis of the D_log^(λ,N)
-   Operators*. arXiv:2601.12133.
-3. Andrews, R. Jr. (2026). *Independent Reproduction and Convergence
-   Analysis of the CCM Zeta Spectral Triple*.
-   GitHub: TeamXcelerator/ccm-reproduction-and-convergence.
-
-## Citation
-
+```text
+[PASS] run integrity: run-...
+[FAIL] hypothesis: <finite comparison> — <measured reason>
+Overall run integrity: PASS
 ```
-Andrews, R. Jr. (2026). Empirical Falsification of Convergence Rate
-Predictions for the CCM Zeta Spectral Triple. GitHub:
-TeamXcelerator/ccm-convergence-rate-falsifications.
+
+| Status | Meaning |
+|---|---|
+| PASS | The named finite check or required operation passed. |
+| FAIL | The named hypothesis failed; read its category and measured reason. This alone is not an execution failure. |
+| INCOMPLETE | Required evidence or an applicable diagnostic is missing, invalid or unresolved. |
+| UNASSESSED | The run does not decide the stated question. |
+| UNSUPPORTED | A diagnostic is outside the source's supported domain; its reason is recorded. |
+
+Use `--require-complete-capture` to make incomplete applicable capture fail the
+invocation. Without that option, supplemental incompleteness is still reported
+and the primary measurements remain available. Review both the run summary and
+the capture status before treating the evidence as complete.
+
+Reassess the invocation directory printed by the script without recomputing:
+
+```bash
+python3 scripts/summarize_runs.py /absolute/path/to/claim-invocation
+```
+
+## What is measured
+
+| Experiment | Retained evidence |
+|---|---|
+| Weil/prolate approximation | Sample pairs, least-squares and discrete minimax fits, normalization, prolate eigenvalues, grid/precision and source identities |
+| Indexed root errors | Every requested index, missing rows, absolute and relative errors, means, maxima, log products, quantiles, cumulative error and accuracy prefixes |
+| Transform comparison | Real-part crossings with both complex components, quadrature refinement, reference assignments and a finite Fourier/secular control where applicable |
+| Ultra capture | Applicable sector, response, distance, conditioning, prefix and retained-reduction diagnostics bound to the same CCM source |
+
+Ultra includes the prefix ladder and a full even-sector checkpoint at dimension
+N+1 when supported. Additional checkpoints and working precision are selectable.
+The [evidence guide](docs/RESEARCH_EVIDENCE.md) explains the retained files,
+capture controls and exclusions, including configurations limited by source
+resolution. High precision and finite checks alone do not establish interval
+certification or an asymptotic theorem.
+
+Compatible cached inputs are reused; unavailable inputs are computed locally
+under their current identities. Existing artifacts and journals are preserved.
+Remote cache access and artifact publication are optional. See the
+[local cache setup](docs/RETESTING.md#directories-and-local-cache).
+
+## Local validation
+
+```bash
+python3 -m unittest discover -s tests -p 'test_*.py' -v
+cargo test --locked
+cargo test --release --locked --features arb
+cargo clippy --locked --all-targets -- -D warnings
+cargo clippy --release --locked --all-targets --features arb -- -D warnings
+```
+
+Default Rust tests also run on Windows. See the
+[validation report](docs/VALIDATION.md) for checked configurations and scope.
+
+## Paper and citation
+
+Cite the manuscript edition actually used. When reporting a new experiment,
+record the software revision, Toolkit pin, configuration and run identity as
+well; a software release number does not identify a new manuscript edition.
+
+```bibtex
+@misc{andrews2026ccmfalsifications,
+  author = {Andrews, Ronnie Jr.},
+  title = {Empirical Falsification of Convergence Rate Predictions for the Connes--Consani--Moscovici Zeta Spectral Triple},
+  year = {2026},
+  note = {Manuscript version 2.0},
+  url = {https://github.com/TeamXcelerator/ccm-convergence-rate-falsifications}
+}
 ```
 
 ## License
 
 See [LICENSE](LICENSE). Source-available for verification and study.
 Not licensed for modification, redistribution, or commercial use.
-
-## Trademarks
+The included manuscript files are licensed under CC BY-NC-ND 4.0.
 
 "Team Xcelerator Inc." is a registered trademark of Team Xcelerator Inc.
-All other trademarks are the property of their respective owners.
+
+
+Standalone prime-response events now use the existing bounded exact CPU/CUDA
+action adapter. Stored-source bordered residuals reuse admitted immutable
+matrix preparation and evaluate independent rows in parallel with unchanged
+within-row arithmetic and ordered reduction. Cluster verification reuses MPFR
+scratch and transposes its owned interval matrix for the contraction proof,
+then restores its original layout. Guard order, norm validation, scientific
+acceptance rules, successful artifact bytes, and compatible artifact identities
+are preserved. These implementation changes do not rerun manuscript results or
+establish full-claim or multi-GPU throughput.

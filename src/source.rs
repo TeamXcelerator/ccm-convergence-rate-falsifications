@@ -1,0 +1,697 @@
+use crate::{
+    journal::{Check, Journal, Measurement, Status},
+    Command, Common, NumericalProfile, ResearchCapture, RootAcquisition,
+};
+use anyhow::{ensure, Context, Result};
+use serde_json::json;
+use std::{collections::BTreeMap, time::Instant};
+use xc_cache::{
+    ArtifactCacheContext, CaptureFailure, CapturedDiagnostic, ManagedArtifactCacheSession,
+};
+use xc_spectral::ccm::{
+    self,
+    capture::{CcmCaptureLevel, CcmCapturePlan, RetainedReductionRequest},
+    hp::{capture_run::RetainedCcmRun, HighPrecConfig, HighPrecResult, PortableHighPrecResult},
+    CcmParams,
+};
+
+pub fn config(digits: u32, profile: NumericalProfile, count: usize) -> HighPrecConfig {
+    let mut cfg = HighPrecConfig::for_decimal_digits(digits);
+    cfg.n_eigenvalues = count;
+    match profile {
+        NumericalProfile::Paper => {
+            cfg.set_parity_policy(ccm::hp::CcmParityPolicy::AdaptiveEven);
+            cfg.eigenstate_solver = ccm::hp::CcmEigenstateSolver::LegacyInverseIteration;
+        }
+        NumericalProfile::Current => {
+            cfg.set_parity_policy(ccm::hp::CcmParityPolicy::EvenSector);
+            cfg.eigenstate_solver = ccm::hp::CcmEigenstateSolver::Auto;
+        }
+    }
+    cfg
+}
+
+#[derive(Clone, Copy)]
+enum CaptureStatus {
+    NotRun,
+    Complete,
+    Incomplete,
+    Unsupported,
+}
+
+impl CaptureStatus {
+    fn label(self) -> &'static str {
+        match self {
+            Self::NotRun => "NOT_RUN",
+            Self::Complete => "PASS",
+            Self::Incomplete => "INCOMPLETE",
+            Self::Unsupported => "UNSUPPORTED",
+        }
+    }
+}
+
+pub fn execute<F>(
+    args: &Common,
+    command: &Command,
+    tuple: Option<(u64, usize, u32, usize)>,
+    measure: F,
+) -> Result<bool>
+where
+    F: FnOnce(Option<&HighPrecResult>, &ArtifactCacheContext<'_>) -> Result<Measurement> + Send,
+{
+    let timer = Instant::now();
+    let target_binding = crate::preparation::target_binding()?;
+    let resources = xc_core::RunResources::with_worker_limit(
+        ccm::capture_runtime::CaptureResourcePolicy::from_environment()?.maximum_working_bytes,
+        rayon::current_num_threads(),
+    )?;
+    let _scope = resources.enter();
+    let journal = Journal::start(
+        &args.capture_output,
+        &json!({"schema_version":1,"command":command,"options":args,"resolved_C_N_P_root_count":tuple,"source_policy":"reuse compatible identities; preserve historical results","reference_use":args.root_acquisition,"worker_count":rayon::current_num_threads()}),
+    )?;
+    let mut checks = Vec::new();
+    let mut capture_status = CaptureStatus::NotRun;
+    let policy = xc_numerics::hp_runtime::HpRuntimePolicy {
+        parallel_gl_roots: args.parallel_gl_roots,
+        ..Default::default()
+    };
+    let result = xc_numerics::hp_runtime::run_hp_with_policy(&policy, || -> Result<bool> {
+        let managed =
+            ManagedArtifactCacheSession::from_environment()?.context("managed cache required")?;
+        let cache = managed.context();
+        let mut run = None;
+        let mut resolved = None;
+        if let Some((c, n, p, count)) = tuple {
+            ensure!(
+                c >= 2 && (2..=8192).contains(&n) && (20..=100_000).contains(&p),
+                "require C>=2, 2<=N<=8192 and 20<=precision-digits<=100000"
+            );
+            let params = CcmParams::from_lambda_sq_integer(c, n);
+            let mut cfg = config(p, args.numerical_profile, count);
+            let complete_positive = matches!(command, Command::SliwinskiCheck { .. })
+                && args.root_acquisition == RootAcquisition::Independent;
+            if complete_positive {
+                cfg.root_precision_policy = ccm::hp::RootPrecisionPolicy::Adaptive;
+            }
+            println!("Stage primary acquisition: started (C={c}, N={n}, digits={p})");
+            let primary_started = Instant::now();
+            let value = match args.root_acquisition {
+                RootAcquisition::Independent => RetainedCcmRun::independent(
+                    &params,
+                    &cfg,
+                    &ccm::window::ZeroTarget::FirstK { count },
+                    if complete_positive {
+                        ccm::hp::IndependentRootDiscoveryOptions::complete_positive(true)
+                    } else {
+                        ccm::hp::IndependentRootDiscoveryOptions::advanced(false, true)
+                    },
+                    &cache,
+                )?,
+                RootAcquisition::Seeded => {
+                    let dataset = xc_zeta::zeros::bundled_dataset_identity()?;
+                    let seeds = xc_zeta::zeros::bundled_first_n_strings(count)?
+                        .iter()
+                        .map(|s| crate::numerics::decimal(s, cfg.precision_bits))
+                        .collect::<Result<Vec<_>>>()?;
+                    RetainedCcmRun::seeded(&params, &cfg, 1, &seeds, &dataset, &cache)?
+                }
+            };
+            println!(
+                "Stage primary acquisition: completed ({:.3}s)",
+                primary_started.elapsed().as_secs_f64()
+            );
+            journal.save(
+                "primary.json",
+                &PortableHighPrecResult::from_runtime(value.primary())?,
+            )?;
+            journal.save("primary-sources.json", &value.primary_sources())?;
+            run = Some(value);
+            resolved = Some((params, cfg));
+        }
+        // Measurements are durable before any supplemental capture or publication.
+        println!("Stage experiment measurement: started");
+        let measurement_started = Instant::now();
+        let mut measurement = measure(run.as_ref().map(|r| r.primary()), &cache)?;
+        println!(
+            "Stage experiment measurement: completed ({:.3}s)",
+            measurement_started.elapsed().as_secs_f64()
+        );
+        if let Some(run) = &run {
+            measurement.source_manifests.extend(run.primary_sources());
+        }
+        journal.save("measurements.json", &measurement)?;
+        // Existing generic research artifacts retain the complete experiment data
+        // without inventing unregistered artifact types or requiring log parsing.
+        let receipt = xc_cache::capture_and_persist(
+            &json!({"semantics":"paper2-finite-measurements-v1","implementation_digest":crate::journal::implementation_digest(),"source_identities":measurement.source_manifests.iter().map(|m|json!({"key":m.key,"content_digest":m.content_digest})).collect::<Vec<_>>(),"command":command,"resolved_C_N_P_root_count":tuple,"numerical_profile":args.numerical_profile,"root_acquisition":args.root_acquisition,"toolkit_revision":crate::TOOLKIT_REVISION}),
+            vec!["paper2_measurements".into()],
+            |_| {
+                CapturedDiagnostic::new(&measurement, measurement.source_manifests.clone())
+                    .map_err(CaptureFailure::failed)
+            },
+            &cache,
+        )?;
+        journal.save("measurement-receipt.json", &receipt.value)?;
+        ensure!(
+            receipt.value.receipt.is_complete(),
+            "measurement artifact retention incomplete; local measurements preserved"
+        );
+        let valid = measurement.valid();
+        checks.extend(measurement.checks);
+        let capture_complete = if let (Some(run), Some((params, cfg))) = (&mut run, &resolved) {
+            let complete = match capture(run, params, cfg, args, &cache, &journal, &mut checks, &target_binding) {
+                Ok(complete) => complete,
+                Err(error) => {
+                    checks.push(Check::new(
+                        "capture persistence",
+                        "capture",
+                        Status::Incomplete,
+                        format!("{error:#}"),
+                    ));
+                    false
+                }
+            };
+            capture_status = if complete {
+                CaptureStatus::Complete
+            } else {
+                CaptureStatus::Incomplete
+            };
+            complete
+        } else {
+            capture_status = CaptureStatus::Unsupported;
+            checks.push(Check::new(
+                "CCM research capture",
+                "capture",
+                Status::Unsupported,
+                "the naive transform has no CCM source; all transform measurements are retained",
+            ));
+            true
+        };
+        // A publication failure is recorded after measurements and receipts are saved.
+        match managed.finalize_publication_inventory() {
+            Ok(_) => checks.push(Check::new(
+                "artifact finalization",
+                "publication",
+                Status::Pass,
+                "managed artifact inventory finalized under configured publication policy",
+            )),
+            Err(error) => {
+                checks.push(Check::new(
+                    "artifact finalization",
+                    "publication",
+                    Status::Incomplete,
+                    error.to_string(),
+                ));
+                return Ok(false);
+            }
+        }
+        Ok(valid && (!args.require_complete_capture || capture_complete))
+    }).map_err(anyhow::Error::from).and_then(std::convert::identity);
+    finish_run(result, capture_status, &journal, checks, timer)
+}
+
+fn finish_run(
+    result: Result<bool>,
+    capture_status: CaptureStatus,
+    journal: &Journal,
+    mut checks: Vec<Check>,
+    timer: Instant,
+) -> Result<bool> {
+    let successful = match result {
+        Ok(value) => value,
+        Err(error) => {
+            journal.save("failure.json",&json!({"error":format!("{error:#}"),"primary_saved":journal.directory.join("primary.json").exists(),"measurements_saved":journal.directory.join("measurements.json").exists()}))
+                .with_context(|| format!("could not record computation failure: {error:#}"))?;
+            checks.push(Check::new(
+                "required computation",
+                "validation",
+                Status::Incomplete,
+                format!("{error:#}"),
+            ));
+            false
+        }
+    };
+    if matches!(capture_status, CaptureStatus::NotRun) {
+        checks.push(Check::new(
+            "CCM research capture",
+            "capture",
+            Status::Incomplete,
+            "not run: required computation failed before the capture stage",
+        ));
+    }
+    let capture_status = capture_status.label();
+    let summary = json!({"schema_version":1,"run_status":if successful {"PASS"} else {"INCOMPLETE"},"capture_status":capture_status,"checks":checks,"elapsed_seconds":timer.elapsed().as_secs_f64(),"measurements_saved":journal.directory.join("measurements.json").exists(),"scope":"run integrity and finite hypothesis outcomes are separate; no asymptotic theorem is inferred"});
+    journal.save("summary.json", &summary)?;
+    for check in &checks {
+        println!(
+            "[{}] {} / {}: {}",
+            check.status.label(),
+            check.category,
+            check.name,
+            check.reason
+        );
+    }
+    println!(
+        "Run integrity: {} ({:.3}s)",
+        if successful { "PASS" } else { "INCOMPLETE" },
+        timer.elapsed().as_secs_f64()
+    );
+    println!(
+        "Summary: {}",
+        journal.directory.join("summary.json").display()
+    );
+    println!("Applicable capture completeness: {capture_status}");
+    Ok(successful)
+}
+
+fn exclusions(
+    params: &CcmParams,
+    cfg: &HighPrecConfig,
+    plan: &CcmCapturePlan,
+) -> BTreeMap<String, String> {
+    let mut skipped: BTreeMap<String, String> = BTreeMap::new();
+    if cfg.effective_parity_policy() != ccm::hp::CcmParityPolicy::EvenSector {
+        for id in ["prime_power_response", "u_flow_response"] {
+            skipped.insert(
+                id.into(),
+                "requires an isolated even-sector primary; historical parity policy is preserved"
+                    .into(),
+            );
+        }
+        for n in &plan.prefix_checkpoint_dimensions {
+            skipped.insert(format!("prefix_checkpoint_{n}"),"checkpoint eigenstate export requires an exact even-sector source; no projection or replacement is substituted".into());
+        }
+    }
+    if params.lambda_sq_int() == 1000 && params.n_modes == 800 && cfg.precision_bits == 3386 {
+        for id in [
+            "prime_power_response",
+            "u_flow_response",
+            "prefix_ladder",
+            "prefix_checkpoint_801",
+            "target_distance",
+            "distance_resolution",
+            "target_residual_analysis",
+            "deviation_decomposition",
+        ] {
+            skipped.insert(id.into(),"documented C=1000,N=800,HP-1000 resolution limit: eigenstate/positive prefixes and target-distance refinement are unresolved; use a separate higher-precision source".into());
+        }
+    }
+    if skipped.contains_key("prefix_ladder") {
+        let reason = skipped["prefix_ladder"].clone();
+        for n in &plan.prefix_checkpoint_dimensions {
+            skipped.insert(format!("prefix_checkpoint_{n}"), reason.clone());
+        }
+    }
+    skipped
+}
+
+pub fn preflight(args: &Common, n: usize, p: u32) -> Result<()> {
+    let level = match args.research_capture {
+        ResearchCapture::Claim => CcmCaptureLevel::Claim,
+        ResearchCapture::Research => CcmCaptureLevel::Research,
+        ResearchCapture::Gap => CcmCaptureLevel::Gap,
+        ResearchCapture::Maximum => CcmCaptureLevel::Maximum,
+        ResearchCapture::Ultra => CcmCaptureLevel::Ultra,
+    };
+    let mut plan = CcmCapturePlan::resolve(level, args.research_sector_eigenpairs.min(n), n + 1)?;
+    if !args.capture_prefix_checkpoints.is_empty() {
+        let mut points = args.capture_prefix_checkpoints.clone();
+        points.push(n + 1);
+        points.sort_unstable();
+        points.dedup();
+        plan = plan.with_prefix_checkpoints(points)?;
+    }
+    if let Some(bits) = args.capture_working_precision_bits {
+        plan = plan.with_prefix_working_precision(bits)?;
+    }
+    plan.validate_for_source_precision(config(p, args.numerical_profile, 1).precision_bits)?;
+    ensure!(
+        args.capture_reduction_max_dimension > 0,
+        "reduction dimension budget must be positive"
+    );
+    Ok(())
+}
+
+#[allow(clippy::too_many_arguments)]
+fn capture(
+    run: &mut RetainedCcmRun,
+    params: &CcmParams,
+    cfg: &HighPrecConfig,
+    args: &Common,
+    cache: &ArtifactCacheContext<'_>,
+    journal: &Journal,
+    checks: &mut Vec<Check>,
+    target_binding: &serde_json::Value,
+) -> Result<bool> {
+    let level = match args.research_capture {
+        ResearchCapture::Claim => CcmCaptureLevel::Claim,
+        ResearchCapture::Research => CcmCaptureLevel::Research,
+        ResearchCapture::Gap => CcmCaptureLevel::Gap,
+        ResearchCapture::Maximum => CcmCaptureLevel::Maximum,
+        ResearchCapture::Ultra => CcmCaptureLevel::Ultra,
+    };
+    let mut plan = CcmCapturePlan::resolve(
+        level,
+        args.research_sector_eigenpairs.min(params.n_modes),
+        params.n_modes + 1,
+    )?;
+    if !args.capture_prefix_checkpoints.is_empty() {
+        let mut checkpoints = args.capture_prefix_checkpoints.clone();
+        checkpoints.push(params.n_modes + 1);
+        checkpoints.sort_unstable();
+        checkpoints.dedup();
+        plan = plan.with_prefix_checkpoints(checkpoints)?;
+    }
+    if let Some(bits) = args.capture_working_precision_bits {
+        plan = plan.with_prefix_working_precision(bits)?;
+    }
+    plan.validate_for_source_precision(cfg.precision_bits)?;
+    let mut options = plan.primary_options()?;
+    options.sector_gap_certification = args.capture_sector_gap_certificate.then(Default::default);
+    if let Some(distance) = &mut options.distance_capture {
+        let replacement = ccm::hp::CcmDistanceCaptureOptions::default_convention(
+            args.capture_grid_resolution,
+            args.capture_profile_steps,
+        );
+        distance.rules = replacement.rules;
+        distance.profile_steps = replacement.profile_steps;
+    }
+    let reduction = (level == CcmCaptureLevel::Ultra).then(|| RetainedReductionRequest {
+        working_precision_bits: args
+            .capture_working_precision_bits
+            .unwrap_or(cfg.precision_bits),
+        maximum_dimension: args.capture_reduction_max_dimension,
+        relative_tolerance: format!(
+            "1e-{}",
+            (cfg.precision_bits.saturating_sub(48) as usize * 3 / 10).max(1)
+        ),
+    });
+    let mut requested = plan
+        .receipt()?
+        .outcomes()
+        .keys()
+        .filter(|id| !id.starts_with("prefix_"))
+        .cloned()
+        .collect::<Vec<_>>();
+    if plan.capture_prefix_analysis {
+        requested.push("prefix_ladder".into());
+        requested.extend(
+            plan.prefix_checkpoint_dimensions
+                .iter()
+                .map(|d| format!("prefix_checkpoint_{d}")),
+        );
+    }
+    if reduction.is_some() {
+        requested.push("retained_reduction".into());
+    }
+    if args.capture_sector_gap_certificate {
+        requested.push("sector_gap_certificate".into());
+    }
+    let mut skipped = exclusions(params, cfg, &plan);
+    for id in ["configuration_comparison", "dimension_precision_budget"] {
+        skipped.insert(
+            id.into(),
+            "deferred until compatible independently computed configurations are available".into(),
+        );
+    }
+    skipped.retain(|id, _| requested.contains(id));
+    requested.retain(|id| !skipped.contains_key(id));
+    let resolved = json!({"schema_version":1,"capture":plan,"retained_reduction":reduction,"excluded_diagnostics":skipped,"requested_diagnostics":requested,"primary_source_ids":run.primary_sources(),"distance_grid":args.capture_grid_resolution,"profile_steps":args.capture_profile_steps});
+    journal.save("capture-plan.json", &resolved)?;
+    let mut preparation_complete = true;
+    if level == CcmCaptureLevel::Ultra {
+        let preparation =
+            crate::preparation::prepare(run, params, cfg, args, cache, journal, target_binding);
+        let (status, detail) = match preparation {
+            Ok(detail) => (Status::Pass, detail),
+            Err(error) => (
+                Status::Incomplete,
+                json!({"status":"failed","error":format!("{error:#}")}),
+            ),
+        };
+        journal.save("input-preparation-status.json", &detail)?;
+        preparation_complete = status == Status::Pass;
+        checks.push(Check::new(
+            "external input preparation",
+            "capture",
+            status,
+            detail.to_string(),
+        ));
+    }
+    for (id, reason) in &skipped {
+        checks.push(Check::new(id, "capture", Status::Unsupported, reason));
+    }
+    if requested.is_empty() {
+        return Ok(preparation_complete);
+    }
+    let retained = if plan.capture_prefix_analysis
+        && requested
+            .iter()
+            .any(|id| id.starts_with("prefix_") || id == "retained_reduction")
+    {
+        match run.retained_even_sources(cache) {
+            Ok(v) => Some(v),
+            Err(error) => {
+                journal.save(
+                    "retained-source-failure.json",
+                    &json!({"error":format!("{error:#}")}),
+                )?;
+                None
+            }
+        }
+    } else {
+        None
+    };
+    let mut prefix: Option<xc_cache::ArtifactExecutionCacheResult<ccm::prefix::CcmPrefixAnalysis>> =
+        None;
+    let target_missing = xc_spectral::target::TargetProfileSpec::from_environment()
+        .err()
+        .map(|e| e.to_string());
+    let record = xc_cache::capture_and_persist(
+        &resolved,
+        requested,
+        |id| {
+            println!("Capture {id}: started");
+            if id == "retained_reduction" {
+                let (matrix, _) = retained.as_ref().ok_or_else(|| CaptureFailure::Missing {
+                    reason: "retained even matrix unavailable".into(),
+                })?;
+                let budget = reduction.as_ref().expect("requested reduction");
+                if matrix.dimension() > budget.maximum_dimension {
+                    return Err(CaptureFailure::Blocked {
+                        reason: "retained reduction exceeds explicit dimension budget".into(),
+                    });
+                }
+                let r = ccm::prefix::check_retained_reduction_via_cache(
+                    matrix,
+                    budget.working_precision_bits,
+                    budget.maximum_dimension,
+                    &budget.relative_tolerance,
+                    cache,
+                )
+                .map_err(CaptureFailure::failed)?;
+                let sources = r
+                    .produced_manifest
+                    .as_ref()
+                    .or(r.reused_manifest.as_ref())
+                    .map(|m| vec![m.clone()])
+                    .unwrap_or_else(|| vec![matrix.manifest().clone()]);
+                return CapturedDiagnostic::new(&r.value, sources).map_err(CaptureFailure::failed);
+            }
+            if id == "prefix_ladder" {
+                let (matrix, pairs) = retained.as_ref().ok_or_else(|| CaptureFailure::Missing {
+                    reason: "retained even matrix unavailable".into(),
+                })?;
+                let r = plan
+                    .capture_retained_diagnostics(matrix, pairs, cache)
+                    .map_err(CaptureFailure::failed)?
+                    .ok_or_else(|| CaptureFailure::failed("prefix disabled"))?;
+                let sources = r
+                    .produced_manifest
+                    .as_ref()
+                    .or(r.reused_manifest.as_ref())
+                    .map(|m| vec![m.clone()])
+                    .unwrap_or_else(|| vec![matrix.manifest().clone()]);
+                let diagnostic =
+                    CapturedDiagnostic::new(&r.value, sources).map_err(CaptureFailure::failed)?;
+                prefix = Some(r);
+                return Ok(diagnostic);
+            }
+            if let Some(dimension) = id.strip_prefix("prefix_checkpoint_") {
+                let r = prefix.as_ref().ok_or_else(|| CaptureFailure::Blocked {
+                    reason: "prefix ladder unavailable".into(),
+                })?;
+                let checkpoint = r
+                    .value
+                    .checkpoints
+                    .iter()
+                    .find(|c| c.dimension.to_string() == dimension)
+                    .ok_or_else(|| CaptureFailure::Missing {
+                        reason: "requested checkpoint not reached".into(),
+                    })?;
+                if checkpoint.eigenpair_source.is_none() {
+                    return Err(CaptureFailure::Missing {
+                        reason:
+                            "checkpoint eigenstate unavailable; partial export retained in ladder"
+                                .into(),
+                    });
+                }
+                let sources = r
+                    .produced_manifest
+                    .as_ref()
+                    .or(r.reused_manifest.as_ref())
+                    .map(|m| vec![m.clone()])
+                    .unwrap_or_default();
+                return CapturedDiagnostic::new(checkpoint, sources)
+                    .map_err(CaptureFailure::failed);
+            }
+            if matches!(
+                id,
+                "target_distance"
+                    | "distance_resolution"
+                    | "target_residual_analysis"
+                    | "deviation_decomposition"
+            ) {
+                if let Some(reason) = &target_missing {
+                    return Err(CaptureFailure::Missing {
+                        reason: format!("runtime target unavailable: {reason}"),
+                    });
+                }
+            }
+            let started = Instant::now();
+            let result = run.capture_diagnostic_outcome(id, &options, cache);
+            println!(
+                "Capture {id}: {} ({:.3}s)",
+                if result.is_ok() {
+                    "completed"
+                } else {
+                    "incomplete"
+                },
+                started.elapsed().as_secs_f64()
+            );
+            result
+        },
+        cache,
+    )?;
+    journal.save("capture.json", &record.value)?;
+    for (id, outcome) in record.value.receipt.outcomes() {
+        let status = match outcome {
+            xc_core::DiagnosticOutcome::Completed { .. } => Status::Pass,
+            _ => Status::Incomplete,
+        };
+        checks.push(Check::new(
+            id,
+            "capture",
+            status,
+            if status == Status::Pass {
+                "completed".into()
+            } else {
+                serde_json::to_string(outcome)?
+            },
+        ));
+    }
+    Ok(preparation_complete && record.value.receipt.is_complete())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::{
+        fs,
+        time::{SystemTime, UNIX_EPOCH},
+    };
+
+    fn reporting_journal() -> (std::path::PathBuf, Journal) {
+        let root = std::env::temp_dir().join(format!(
+            "capture-failure-reporting-{}-{}",
+            std::process::id(),
+            SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .unwrap()
+                .as_nanos(),
+        ));
+        let journal = Journal::start(&root, &json!({})).unwrap();
+        (root, journal)
+    }
+
+    #[test]
+    fn primary_failure_retains_error_and_capture_not_run() {
+        let (root, journal) = reporting_journal();
+        let error =
+            anyhow::anyhow!("exact polynomial budget exceeded").context("primary acquisition");
+        assert!(!finish_run(
+            Err(error),
+            CaptureStatus::NotRun,
+            &journal,
+            vec![],
+            Instant::now(),
+        )
+        .unwrap());
+        let summary: serde_json::Value =
+            serde_json::from_slice(&fs::read(journal.directory.join("summary.json")).unwrap())
+                .unwrap();
+        let failure: serde_json::Value =
+            serde_json::from_slice(&fs::read(journal.directory.join("failure.json")).unwrap())
+                .unwrap();
+        assert_eq!(summary["run_status"], "INCOMPLETE");
+        assert_eq!(summary["capture_status"], "NOT_RUN");
+        assert_eq!(summary["measurements_saved"], false);
+        assert_eq!(failure["primary_saved"], false);
+        assert_eq!(failure["measurements_saved"], false);
+        assert_eq!(
+            failure["error"],
+            "primary acquisition: exact polynomial budget exceeded"
+        );
+        assert_eq!(summary["checks"][0]["reason"], failure["error"]);
+        assert_eq!(summary["checks"][1]["status"], "INCOMPLETE");
+        assert!(summary["checks"][1]["reason"]
+            .as_str()
+            .unwrap()
+            .starts_with("not run:"));
+        assert!(!journal.directory.join("measurements.json").exists());
+        fs::remove_dir_all(root).unwrap();
+    }
+
+    #[test]
+    fn completed_capture_is_separate_from_run_integrity() {
+        for (status, label, successful) in [
+            (CaptureStatus::Complete, "PASS", true),
+            (CaptureStatus::Complete, "PASS", false),
+            (CaptureStatus::Incomplete, "INCOMPLETE", false),
+            (CaptureStatus::Unsupported, "UNSUPPORTED", true),
+        ] {
+            let (root, journal) = reporting_journal();
+            journal.save("measurements.json", &json!({})).unwrap();
+            assert_eq!(
+                finish_run(Ok(successful), status, &journal, vec![], Instant::now(),).unwrap(),
+                successful
+            );
+            let summary: serde_json::Value =
+                serde_json::from_slice(&fs::read(journal.directory.join("summary.json")).unwrap())
+                    .unwrap();
+            assert_eq!(summary["capture_status"], label);
+            assert_eq!(
+                summary["run_status"],
+                if successful { "PASS" } else { "INCOMPLETE" }
+            );
+            assert_eq!(summary["measurements_saved"], true);
+            assert!(!journal.directory.join("failure.json").exists());
+            fs::remove_dir_all(root).unwrap();
+        }
+    }
+
+    #[test]
+    fn frozen_low_precision_case_is_excluded_before_capture() {
+        let p = CcmParams::from_lambda_sq_integer(1000, 800);
+        let cfg = config(1000, NumericalProfile::Current, 8);
+        let plan = CcmCapturePlan::ultra(8, 801).unwrap();
+        let skipped = exclusions(&p, &cfg, &plan);
+        assert!(skipped.contains_key("prefix_ladder"));
+        assert!(skipped.contains_key("target_distance"));
+        assert!(
+            !exclusions(&p, &config(2000, NumericalProfile::Current, 8), &plan)
+                .contains_key("prefix_ladder")
+        );
+    }
+}
